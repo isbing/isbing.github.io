@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前言springcloud里面的eureka模块来实现 服务注册和发现。 Eureka采用了 C-S 的 设计架构。 EurekaServer 作为 服务注册中心，系统中的 其他微服务，使用 Eureka 的 客户端 连接到 EurekaServer，并通过 心跳连接 检测服务的 存活状态。 正文Eureka Server: 作为 服务注册中心，提供 服务注册和发现。 Eureka Client:">
+<meta name="keywords" content="springcloud">
+<meta property="og:type" content="article">
+<meta property="og:title" content="服务注册与服务发现">
+<meta property="og:url" content="http://yoursite.com/2019/01/01/cloud服务注册与服务发现/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="前言springcloud里面的eureka模块来实现 服务注册和发现。 Eureka采用了 C-S 的 设计架构。 EurekaServer 作为 服务注册中心，系统中的 其他微服务，使用 Eureka 的 客户端 连接到 EurekaServer，并通过 心跳连接 检测服务的 存活状态。 正文Eureka Server: 作为 服务注册中心，提供 服务注册和发现。 Eureka Client:">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-03-02T02:47:25.371Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="服务注册与服务发现">
+<meta name="twitter:description" content="前言springcloud里面的eureka模块来实现 服务注册和发现。 Eureka采用了 C-S 的 设计架构。 EurekaServer 作为 服务注册中心，系统中的 其他微服务，使用 Eureka 的 客户端 连接到 EurekaServer，并通过 心跳连接 检测服务的 存活状态。 正文Eureka Server: 作为 服务注册中心，提供 服务注册和发现。 Eureka Client:">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/01/01/cloud服务注册与服务发现/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>服务注册与服务发现 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/01/cloud服务注册与服务发现/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">服务注册与服务发现
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-01-01 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-01T17:01:21+08:00">2019-01-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 10:47:25" itemprop="dateModified" datetime="2019-03-02T10:47:25+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/springcloud/" itemprop="url" rel="index"><span itemprop="name">springcloud</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>springcloud里面的eureka模块来实现 <strong>服务注册和发现</strong>。 <code>Eureka</code>采用了 <code>C-S</code> 的 <strong>设计架构</strong>。 <code>EurekaServer</code> 作为 <strong>服务注册中心</strong>，系统中的 <strong>其他微服务</strong>，使用 <code>Eureka</code> 的 <strong>客户端</strong> 连接到 <code>EurekaServer</code>，并通过 <strong>心跳连接</strong> 检测服务的 <strong>存活状态</strong>。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p><strong>Eureka Server</strong>: 作为 <strong>服务注册中心</strong>，提供 <strong>服务注册和发现</strong>。</p>
+<p><strong>Eureka Client</strong>: 所有注册到 <strong>服务中心</strong> 的服务。</p>
+<ul>
+<li><p><strong>Service Provider</strong>: 把 <strong>自身的服务</strong> 注册到 <code>EurekaServer</code>，从而使 <strong>服务消费方</strong> 能够找到。</p>
+</li>
+<li><p><strong>Service Consumer</strong>: 从 <code>EurekaServer</code> 获取 <strong>服务注册列表</strong>，从而能够 <strong>消费服务</strong>。</p>
+</li>
+</ul>
+<p>创建 <code>2</code> 个项目 <code>Module</code>，一个 <code>Module</code>（即 <code>SpringBoot</code>）工程作为 <strong>服务注册中心</strong>，即 <code>EurekaServer</code>，另一个作为 <code>EurekaClient</code>。</p>
+<h2 id="创建服务注册中心"><a href="#创建服务注册中心" class="headerlink" title="创建服务注册中心"></a>创建服务注册中心</h2><p><code>EurekaServer</code> 创建完后的工程pom如下（只复制主要的）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-eureka-server&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p><code>application.yml</code> 文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">server:</span><br><span class="line">    port:8761</span><br><span class="line">eureka:</span><br><span class="line">    instance:</span><br><span class="line">        hostname:localhost</span><br><span class="line">    client:</span><br><span class="line">        registerWithEureka:false</span><br><span class="line">        fetchRegistry:false</span><br><span class="line">        serviceUrl:</span><br><span class="line">            defaultZone:http://$&#123;eureka.instance.hostname&#125;:$&#123;server.port&#125;/eureka/</span><br></pre></td></tr></table></figure>
+<ul>
+<li><strong>eureka.client.register-with-eureka</strong></li>
+</ul>
+<p>设置是否将自己作为 <code>EurekaClient</code> 注册到 <code>EurekaServer</code>，默认为 <code>true</code>。</p>
+<ul>
+<li><strong>eureka.client.fetch-registry</strong></li>
+</ul>
+<p>设置是否从 <code>EurekaServer</code> 获取 <strong>注册信息</strong>，默认为 <code>true</code>。因为本例是一个 <strong>单点</strong> 的 <code>EurekaServer</code>，不需要 <strong>同步</strong> 其他 <code>EurekaServer</code> 节点的数据，所以设置为 <code>false</code>。</p>
+<ul>
+<li><strong>eureka.client.service-url.defaultZone</strong></li>
+</ul>
+<p>设置的是与 <code>EurekaServer</code> 的 <strong>交互地址</strong>，<strong>查询</strong> 和 <strong>注册服务</strong> 都依赖这个地址，如果有多个可以使用 <strong>英文逗号分隔</strong>。</p>
+<p>然后再把注解 <code>@EnableEurekaServer</code> 加在 <code>SpringBoot</code> 工程的启动类 <code>Application</code> 上面：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@EnableEurekaServer</span><br><span class="line">@SpringBootApplication</span><br><span class="line">public class EurekaserverApplication &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        SpringApplication.run(EurekaserverApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>EurekaServer</code> 是有界面的，启动项目后，打开浏览器访问 <code>http://localhost:8761</code> 即可查看。</p>
+<h2 id="创建服务提供者"><a href="#创建服务提供者" class="headerlink" title="创建服务提供者"></a>创建服务提供者</h2><p>当一个 <code>EurekaClient</code> 向 <code>EurekaServer</code> 发起 <strong>注册</strong> 时，它会提供一些 <strong>元数据</strong>，例如 <strong>主机</strong> 和 <strong>端口</strong> 等等。 <code>EurekaServer</code> 从每个 <code>EurekaClient</code> 实例接收 <strong>心跳消息</strong>。 如果 <strong>心跳超时</strong>，则通常将该实例从 <code>EurekaServer</code> 中删除。依赖包引用的 是 客户端的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;spring-cloud-starter-eureka&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>通过 <strong>注解</strong> <code>@EnableEurekaClient</code> 表明自己是一个 <code>EurekaClient</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@SpringBootApplication</span><br><span class="line">@EnableEurekaClient</span><br><span class="line">@RestController</span><br><span class="line">public class ServiceHiApplication &#123;</span><br><span class="line">    @Value(&quot;$&#123;server.port&#125;&quot;)</span><br><span class="line">    private String port;</span><br><span class="line">    </span><br><span class="line">    public static void main(String[] args) &#123;   </span><br><span class="line">        SpringApplication.run(ServiceHiApplication.class, args);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    @RequestMapping(&quot;/hi&quot;)</span><br><span class="line">    public String home(@RequestParam String name) &#123;</span><br><span class="line">        return &quot;Hi &quot; + name + &quot;, I am from port: &quot;  + port;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>仅仅 <code>@EnableEurekaClient</code> 是不够的，还需要在 <strong>配置文件</strong> 中注明的 <strong>服务注册中心</strong> 的地址， <code>application.yml</code> 配置文件如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">eureka:</span><br><span class="line">    client:    </span><br><span class="line">        serviceUrl:</span><br><span class="line">            defaultZone: http://localhost:8761/eureka/</span><br><span class="line">server:</span><br><span class="line">    port: 8763</span><br><span class="line">spring:</span><br><span class="line">    application:  </span><br><span class="line">        name: service-hi</span><br></pre></td></tr></table></figure>
+<p><code>Eureka</code> <strong>客户端</strong> 需要指明 <code>spring.application.name</code>，用于服务的 <strong>唯一标识</strong>，<strong>服务之间</strong>相互调用会基于这个 <code>name</code>。</p>
+<p>启动并访问 <code>EurekaServer</code> 的地址 <code>http://localhost:8761</code>，会发现服务名称为 <code>SERVICE-HI</code>，端口为 <code>7862</code> 的服务，已注册到 <code>EurekaServer</code> 的列表上。</p>
+<h2 id="高可用的eureka-server"><a href="#高可用的eureka-server" class="headerlink" title="高可用的eureka-server"></a>高可用的eureka-server</h2><p>在一个 <strong>分布式系统</strong> 中，<strong>服务注册中心</strong> 是最重要的基础部分，必须处于 <strong>可以提供服务</strong> 的状态。为了维持其 <strong>可用性</strong>，使用 <strong>集群</strong> 是很好的解决方案。</p>
+<p><code>Eureka</code> 通过节点 <strong>对等注册</strong> 的方式实现 <strong>高可用的部署</strong>，所以只需要为每一个 <code>EurekeServer</code> 配置 <strong>其他可用的</strong> <code>EurekeServer</code> 的 <code>serviceUrl</code>，就能实现高可用部署。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">spring:</span><br><span class="line">    profiles:</span><br><span class="line">        active: peer1 #peer2</span><br><span class="line">---</span><br><span class="line">spring:</span><br><span class="line">    profiles: peer1</span><br><span class="line">server:</span><br><span class="line">    port: 8761</span><br><span class="line">eureka:</span><br><span class="line">    instance:</span><br><span class="line">        hostname: localhost  </span><br><span class="line">    client:</span><br><span class="line">        serviceUrl:</span><br><span class="line">            defaultZone: http://localhost:8762/eureka/</span><br><span class="line">---</span><br><span class="line">spring:</span><br><span class="line">    profiles: peer2</span><br><span class="line">server:</span><br><span class="line">    port: 8762</span><br><span class="line">eureka:</span><br><span class="line">    instance:</span><br><span class="line">        hostname: localhost </span><br><span class="line">    client:</span><br><span class="line">        serviceUrl:</span><br><span class="line">            defaultZone: http://localhost:8761/eureka/</span><br></pre></td></tr></table></figure>
+<p>更改 <code>EurekaServer</code> 的配置文件，再分别以 </p>
+<p><code>spring.profiles.active=peer1</code> 和</p>
+<p> <code>spring.profiles.active=peer2</code> 作为参数，</p>
+<p>启动两次 <code>EurekaServer</code> 即可。</p>
+<p>访问 <code>http://localhost:8761/</code>。可以发现， <code>EurekaClient</code> 已经向 <strong>端口号</strong> 为 <code>8761</code> 的 <code>EurekaServer</code> 发起注册。</p>
+<p><strong>服务提供者</strong> 的 <strong>配置文件</strong> 并没有向 <strong>端口号</strong> 为 <code>8762</code> 的 <code>EurekaServer</code> 注册。访问 <code>http://localhost:8762/</code>。可以发现，<strong>服务提供者</strong> 的信息已经向 <code>8762</code> 发起注册了，即 <code>8761</code> 的 <strong>注册信息</strong> 已经同步到 <code>8762</code> 节点。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/springcloud/" rel="tag"># springcloud</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/15/hexo域名绑定/" rel="next" title="hexo绑定域名">
+                <i class="fa fa-chevron-left"></i> hexo绑定域名
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/02/rest+ribbon/" rel="prev" title="rest+ribbon">
+                rest+ribbon <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正文"><span class="nav-number">2.</span> <span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建服务注册中心"><span class="nav-number">2.1.</span> <span class="nav-text">创建服务注册中心</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建服务提供者"><span class="nav-number">2.2.</span> <span class="nav-text">创建服务提供者</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高可用的eureka-server"><span class="nav-number">2.3.</span> <span class="nav-text">高可用的eureka-server</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="全局命令Redis 有 5 种 数据结构，它们是 键值对 中的 值，对于 键 来说有一些通用的命令。 查看所有键 keys *  键总数 dbsize  dbsize 命令在 计算键总数 时 不会遍历 所有键，而是直接获取 Redis 内置的键总数变量，所以 dbsize 命令的 时间复杂度 是 O（1）。而 keys 命令会 遍历所有键，所以它的 时间复杂度 是 O（n），当 Redis 保存了">
+<meta name="keywords" content="redis">
+<meta property="og:type" content="article">
+<meta property="og:title" content="redis数据结构">
+<meta property="og:url" content="http://yoursite.com/2019/02/14/redis数据结构/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="全局命令Redis 有 5 种 数据结构，它们是 键值对 中的 值，对于 键 来说有一些通用的命令。 查看所有键 keys *  键总数 dbsize  dbsize 命令在 计算键总数 时 不会遍历 所有键，而是直接获取 Redis 内置的键总数变量，所以 dbsize 命令的 时间复杂度 是 O（1）。而 keys 命令会 遍历所有键，所以它的 时间复杂度 是 O（n），当 Redis 保存了">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/redis3.jpg">
+<meta property="og:image" content="http://yoursite.com/img/redis4.jpg">
+<meta property="og:updated_time" content="2019-03-02T07:38:01.323Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="redis数据结构">
+<meta name="twitter:description" content="全局命令Redis 有 5 种 数据结构，它们是 键值对 中的 值，对于 键 来说有一些通用的命令。 查看所有键 keys *  键总数 dbsize  dbsize 命令在 计算键总数 时 不会遍历 所有键，而是直接获取 Redis 内置的键总数变量，所以 dbsize 命令的 时间复杂度 是 O（1）。而 keys 命令会 遍历所有键，所以它的 时间复杂度 是 O（n），当 Redis 保存了">
+<meta name="twitter:image" content="http://yoursite.com/img/redis3.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/02/14/redis数据结构/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>redis数据结构 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/redis数据结构/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">redis数据结构
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-14 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-14T17:01:21+08:00">2019-02-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 15:38:01" itemprop="dateModified" datetime="2019-03-02T15:38:01+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="全局命令"><a href="#全局命令" class="headerlink" title="全局命令"></a>全局命令</h1><p><code>Redis</code> 有 <code>5</code> 种 <strong>数据结构</strong>，它们是 <strong>键值对</strong> 中的 <strong>值</strong>，对于 <strong>键</strong> 来说有一些通用的命令。</p>
+<h2 id="查看所有键"><a href="#查看所有键" class="headerlink" title="查看所有键"></a>查看所有键</h2><blockquote>
+<p>keys *</p>
+</blockquote>
+<h2 id="键总数"><a href="#键总数" class="headerlink" title="键总数"></a>键总数</h2><blockquote>
+<p>dbsize</p>
+</blockquote>
+<p><code>dbsize</code> 命令在 <strong>计算键总数</strong> 时 <strong>不会遍历</strong> 所有键，而是直接获取 <code>Redis</code> <strong>内置的键总数变量</strong>，所以 <code>dbsize</code> 命令的 <strong>时间复杂度</strong> 是 <code>O（1）</code>。而 <code>keys</code> 命令会 <strong>遍历</strong>所有键，所以它的 <strong>时间复杂度</strong> 是 <code>O（n）</code>，当 <code>Redis</code> 保存了 <strong>大量键</strong> 时，线上环境 <strong>禁止</strong> 使用。</p>
+<h2 id="检查键是否存在"><a href="#检查键是否存在" class="headerlink" title="检查键是否存在"></a>检查键是否存在</h2><blockquote>
+<p>exists key</p>
+</blockquote>
+<h2 id="删除键"><a href="#删除键" class="headerlink" title="删除键"></a>删除键</h2><blockquote>
+<p>del key</p>
+</blockquote>
+<p><code>del</code> 是一个 <strong>通用命令</strong>，无论值是什么 <strong>数据结构</strong> 类型， <code>del</code> 命令都可以将其 <strong>删除</strong>。</p>
+<h2 id="键过期"><a href="#键过期" class="headerlink" title="键过期"></a>键过期</h2><blockquote>
+<p>expire key seconds</p>
+</blockquote>
+<p><code>Redis</code> 支持对 <strong>键</strong> 添加 <strong>过期时间</strong>，当超过过期时间后，会 <strong>自动删除键</strong></p>
+<p><code>ttl</code> 命令会返回键的 <strong>剩余过期时间</strong>，它有 <code>3</code> 种返回值：</p>
+<ul>
+<li>大于等于 <code>0</code> 的整数：表示键 <strong>剩余</strong> 的 <strong>过期时间</strong>。</li>
+<li>返回 <code>-1</code>：<strong>键</strong> 没设置 <strong>过期时间</strong>。</li>
+<li>返回 <code>-2</code>：<strong>键</strong> 不存在。</li>
+</ul>
+<p>可以通过 <code>ttl</code> 命令观察 <strong>键</strong> <code>hello</code> 的 <strong>剩余过期时间</strong></p>
+<h2 id="键的数据结构类型"><a href="#键的数据结构类型" class="headerlink" title="键的数据结构类型"></a>键的数据结构类型</h2><blockquote>
+<p>type key</p>
+</blockquote>
+<h1 id="数据结构和内部编码"><a href="#数据结构和内部编码" class="headerlink" title="数据结构和内部编码"></a>数据结构和内部编码</h1><p><code>type</code> 命令实际返回的就是当前 <strong>键</strong> 的 <strong>数据结构类型</strong>，它们分别是： <code>string</code>（<strong>字符串</strong>）、 <code>hash</code>（<strong>哈希</strong>）、 <code>list</code>（<strong>列表</strong>）、 <code>set</code>（<strong>集合</strong>）、 <code>zset</code>（<strong>有序集合</strong>），但这些只是 <code>Redis</code> 对外的 <strong>数据结构</strong>。</p>
+<p><img src="/img/redis3.jpg" alt=""></p>
+<p>对于每种 <strong>数据结构</strong>，实际上都有自己底层的 <strong>内部编码</strong> 实现，而且是 <strong>多种实现</strong>。这样 <code>Redis</code> 会在合适的 <strong>场景</strong> 选择合适的 <strong>内部编码</strong>，如图所示：</p>
+<p><img src="/img/redis4.jpg" alt=""></p>
+<p>可以看到，每种 <strong>数据结构</strong> 都有 <strong>两种以上</strong> 的 <strong>内部编码实现</strong>。例如 <code>list</code> <strong>数据结构</strong>包含了 <code>linkedlist</code> 和 <code>ziplist</code> 两种 <strong>内部编码</strong>。同时有些 <strong>内部编码</strong>，例如 <code>ziplist</code>，可以作为 <strong>多种外部数据结构</strong> 的内部实现</p>
+<h1 id="单线程架构"><a href="#单线程架构" class="headerlink" title="单线程架构"></a>单线程架构</h1><p><code>Redis</code> 使用了 <strong>单线程架构</strong> 和 <code>I/O</code> <strong>多路复用模型</strong> 来实现 <strong>高性能</strong> 的 <strong>内存数据库服务</strong>。那为什么 <strong>单线程</strong> 还能这么快，下面分析原因：</p>
+<h2 id="纯内存访问"><a href="#纯内存访问" class="headerlink" title="纯内存访问"></a>纯内存访问</h2><p><code>Redis</code> 将所有数据放在 <strong>内存</strong> 中，内存的 <strong>响应时长</strong> 大约为 <code>100</code> <strong>纳秒</strong>，这是 <code>Redis</code>达到 <strong>每秒万级别</strong> 访问的重要基础。</p>
+<h2 id="非阻塞I-O"><a href="#非阻塞I-O" class="headerlink" title="非阻塞I/O"></a>非阻塞I/O</h2><p><code>Redis</code> 使用 <code>epoll</code> 作为 <code>I/O</code> <strong>多路复用技术</strong> 的实现，再加上 <code>Redis</code> 自身的 <strong>事件处理模型</strong> 将 <code>epoll</code> 中的 <strong>连接</strong>、<strong>读写</strong>、<strong>关闭</strong> 都转换为 <strong>事件</strong>，从而不用不在 <strong>网络</strong> <code>I/O</code> 上浪费过多的时间，如图所示：</p>
+<p>采用 <strong>单线程</strong> 就能达到如此 <strong>高的性能</strong>，那么不失为一种不错的选择，因为 <strong>单线程</strong>能带来几个好处：</p>
+<ul>
+<li><strong>单线程</strong> 可以简化 <strong>数据结构和算法</strong> 的实现，开发人员不需要了解复杂的 <strong>并发数据结构</strong>。</li>
+<li><strong>单线程</strong> 避免了 <strong>线程切换</strong> 和 <strong>竞态</strong> 产生的消耗，对于服务端开发来说，<strong>锁和线程切换</strong> 通常是性能杀手。</li>
+</ul>
+<p><strong>单线程</strong> 的问题：对于 <strong>每个命令</strong> 的 <strong>执行时间</strong> 是有要求的。如果某个命令 <strong>执行过长</strong>，会造成其他命令的 <strong>阻塞</strong>，对于 <code>Redis</code> 这种 <strong>高性能</strong> 的服务来说是致命的，所以 <code>Redis</code>是面向 <strong>快速执行</strong> 场景的数据库。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/redis/" rel="tag"># redis</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/12/Redis集群模式/" rel="next" title="redis集群模式">
+                <i class="fa fa-chevron-left"></i> redis集群模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/17/redis之字符串/" rel="prev" title="redis之字符串">
+                redis之字符串 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#全局命令"><span class="nav-number">1.</span> <span class="nav-text">全局命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#查看所有键"><span class="nav-number">1.1.</span> <span class="nav-text">查看所有键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#键总数"><span class="nav-number">1.2.</span> <span class="nav-text">键总数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#检查键是否存在"><span class="nav-number">1.3.</span> <span class="nav-text">检查键是否存在</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除键"><span class="nav-number">1.4.</span> <span class="nav-text">删除键</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#键过期"><span class="nav-number">1.5.</span> <span class="nav-text">键过期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#键的数据结构类型"><span class="nav-number">1.6.</span> <span class="nav-text">键的数据结构类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据结构和内部编码"><span class="nav-number">2.</span> <span class="nav-text">数据结构和内部编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#单线程架构"><span class="nav-number">3.</span> <span class="nav-text">单线程架构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#纯内存访问"><span class="nav-number">3.1.</span> <span class="nav-text">纯内存访问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非阻塞I-O"><span class="nav-number">3.2.</span> <span class="nav-text">非阻塞I/O</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
