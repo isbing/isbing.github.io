@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="GC的名词新生代GC（Minor GC）指发生在 新生代 的垃圾回收动作，因为 Java 对象大多都具备 朝生夕死 的特性，所以 MinorGC 通常 非常频繁，一般回收速度也比较快。 老年代GC（Major GC）指发生在 老年代 的垃圾回收动作，出现了 MajorGC，经常会伴随至少一次的 MinorGC（发生这种情况，那么 整个堆 都 GC 一遍，通常称为 FullGC）。 MajorGC">
+<meta name="keywords" content="jvm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm图解GC">
+<meta property="og:url" content="http://yoursite.com/2019/03/02/jvm图解GC/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="GC的名词新生代GC（Minor GC）指发生在 新生代 的垃圾回收动作，因为 Java 对象大多都具备 朝生夕死 的特性，所以 MinorGC 通常 非常频繁，一般回收速度也比较快。 老年代GC（Major GC）指发生在 老年代 的垃圾回收动作，出现了 MajorGC，经常会伴随至少一次的 MinorGC（发生这种情况，那么 整个堆 都 GC 一遍，通常称为 FullGC）。 MajorGC">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/jvm7.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm8.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm9.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm10.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm11.jpg">
+<meta property="og:updated_time" content="2019-03-03T08:42:08.695Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jvm图解GC">
+<meta name="twitter:description" content="GC的名词新生代GC（Minor GC）指发生在 新生代 的垃圾回收动作，因为 Java 对象大多都具备 朝生夕死 的特性，所以 MinorGC 通常 非常频繁，一般回收速度也比较快。 老年代GC（Major GC）指发生在 老年代 的垃圾回收动作，出现了 MajorGC，经常会伴随至少一次的 MinorGC（发生这种情况，那么 整个堆 都 GC 一遍，通常称为 FullGC）。 MajorGC">
+<meta name="twitter:image" content="http://yoursite.com/img/jvm7.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/03/02/jvm图解GC/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>jvm图解GC | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/02/jvm图解GC/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">jvm图解GC
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-02 17:01:21" itemprop="dateCreated datePublished" datetime="2019-03-02T17:01:21+08:00">2019-03-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:42:08" itemprop="dateModified" datetime="2019-03-03T16:42:08+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="GC的名词"><a href="#GC的名词" class="headerlink" title="GC的名词"></a>GC的名词</h1><h2 id="新生代GC（Minor-GC）"><a href="#新生代GC（Minor-GC）" class="headerlink" title="新生代GC（Minor GC）"></a>新生代GC（Minor GC）</h2><p>指发生在 <strong>新生代</strong> 的垃圾回收动作，因为 <code>Java</code> 对象大多都具备 <strong>朝生夕死</strong> 的特性，所以 <code>MinorGC</code> 通常 <strong>非常频繁</strong>，一般回收速度也比较快。</p>
+<h2 id="老年代GC（Major-GC）"><a href="#老年代GC（Major-GC）" class="headerlink" title="老年代GC（Major GC）"></a>老年代GC（Major GC）</h2><p>指发生在 <strong>老年代</strong> 的垃圾回收动作，出现了 <code>MajorGC</code>，经常会伴随至少一次的 <code>MinorGC</code>（发生这种情况，那么 <strong>整个堆</strong> 都 <code>GC</code> 一遍，通常称为 <code>FullGC</code>）。 <code>MajorGC</code> 的速度一般会比 <code>MinorGC</code> 慢 <code>10</code> 倍以上。</p>
+<h1 id="Minor-GC"><a href="#Minor-GC" class="headerlink" title="Minor GC"></a>Minor GC</h1><h2 id="Minor-GC过程"><a href="#Minor-GC过程" class="headerlink" title="Minor GC过程"></a>Minor GC过程</h2><p>假设现在Heap内存大小为20M，其中年轻代为10M，老年代为10M，年轻代中Eden区6M，From区2M，To区2M，新创建的对象首先往Eden区分配，当再次分配一个对象，假设大小为1M，此时Eden区已经没有足够空间来给这个对象分配内存，如图所示：</p>
+<p><img src="/img/jvm7.jpg" alt=""></p>
+<p>这时候触发一次Minor GC，把Eden区的存活对象转移到From区，非存活对象进行清理，然后给新创建的对象分配空间，存入Eden区</p>
+<p><img src="/img/jvm8.jpg" alt=""></p>
+<p>随着分配对象的增多，Eden区的空间又不足了：</p>
+<p><img src="/img/jvm9.jpg" alt=""></p>
+<p>这时候再触发一次Minor GC，清理掉Eden区和S1区的死亡对象，把存活对象转移到S2区，然后再给新对象分配内存：</p>
+<p><img src="/img/jvm10.jpg" alt=""></p>
+<p>From区和To区是相对的关系，哪个区中有对象，哪个区就是From区，比如，再进行一次Minor GC，会把存活对象转移到S1区，再为转移之前，S2区是From区，S1区是To区，转移后，S2区中没有存活对象，变为To区，而S1区变为From区：</p>
+<p><img src="/img/jvm11.jpg" alt=""></p>
+<h2 id="对象进入老年代的4种情况"><a href="#对象进入老年代的4种情况" class="headerlink" title="对象进入老年代的4种情况"></a>对象进入老年代的4种情况</h2><p>(1) 假如进行Minor GC时发现，存活的对象在ToSpace区中存不下，那么把存活的对象存入老年代</p>
+<p>(2) 大对象直接进入老年代</p>
+<p>假设新创建的对象很大，比如为5M(这个值可以通过PretenureSizeThreshold这个参数进行设置，默认3M)，那么即使Eden区有足够的空间来存放，也不会存放在Eden区，而是直接存入老年代</p>
+<p>(3) 长期存活的对象将进入老年代</p>
+<p>此外，如果对象在Eden出生并且经过1次Minor GC后仍然存活，并且能被To区容纳，那么将被移动到To区，并且把对象的年龄设置为1，对象没”熬过”一次Minor GC(没有被回收，也没有因为To区没有空间而被移动到老年代中)，年龄就增加一岁，当它的年龄增加到一定程度(默认15岁，配置参数-XX:MaxTenuringThreshold)，就会被晋升到老年代中</p>
+<p>(4) 动态对象年龄判定</p>
+<p>还有一种情况，如果在From空间中，相同年龄所有对象的大小总和大于From和To空间总和的一半，那么年龄大于等于该年龄的对象就会被移动到老年代，而不用等到15岁(默认)：</p>
+<h1 id="Full-GC"><a href="#Full-GC" class="headerlink" title="Full GC"></a>Full GC</h1><p>如果某个(些)对象(原来在内存中存活的对象或者新创建的对象)由于以上原因需要被移动到老年代中，而老年代中没有足够空间容纳这个(些)对象，那么会触发一次Full GC，Full GC会对整个Heap进行一次GC，如果Full GC后还有无法给新创建的对象分配内存，或者无法移动那些需要进入老年代中的对象，那么JVM抛出<strong>OutOfMemoryError</strong></p>
+<h1 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h1><p>在发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那么Minor GC可以确保是安全的。如果不成立，则虚拟机会查看HandlerPromotionFailure这个参数设置的值(true或flase)是否允许担保失败(如果这个值为true，代表着JVM说，我允许在这种条件下尝试执行Minor GC，出了事我负责)。如果允许，那么会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次Minor GC，尽管这次Minor GC是有风险的；如果小于，或者HandlerPromotionFailure为false，那么这次Minor GC将升级为Full GC</p>
+<p>如果老年代最大可用的连续空间大于历次晋升到老年代对象的平均大小，那么在HandlerPromotionFailure为true的情况下，可以尝试进行一次Minor GC，但这是有风险的，如果本次将要晋升到老年代的对象很多，那么Minor GC还是无法执行，此时还得改为Full GC。</p>
+<p>HandlerPromotionFailure为true时，如果某次需要转移到老年代中的对象确实很多，老年代无法容纳，那么也会先尝试进行一次Minor GC，Minor GC无法执行时再进行Full GC，这样虽然绕了圈子，但我们还是建议把这个参数设置为true，因为我们要尽量避免Full GC。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jvm/" rel="tag"># jvm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/20/redis之列表/" rel="next" title="redis之列表">
+                <i class="fa fa-chevron-left"></i> redis之列表
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GC的名词"><span class="nav-number">1.</span> <span class="nav-text">GC的名词</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#新生代GC（Minor-GC）"><span class="nav-number">1.1.</span> <span class="nav-text">新生代GC（Minor GC）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#老年代GC（Major-GC）"><span class="nav-number">1.2.</span> <span class="nav-text">老年代GC（Major GC）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Minor-GC"><span class="nav-number">2.</span> <span class="nav-text">Minor GC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Minor-GC过程"><span class="nav-number">2.1.</span> <span class="nav-text">Minor GC过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象进入老年代的4种情况"><span class="nav-number">2.2.</span> <span class="nav-text">对象进入老年代的4种情况</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Full-GC"><span class="nav-number">3.</span> <span class="nav-text">Full GC</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#空间分配担保"><span class="nav-number">4.</span> <span class="nav-text">空间分配担保</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

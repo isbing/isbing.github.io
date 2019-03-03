@@ -96,25 +96,25 @@
 
 
 
-  <meta name="description" content="平常学习中、都是用c/c++实现的、最近用java实现了顺序表。 线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。  结构体1234567891011public class MyArray &amp;#123;">
-<meta name="keywords" content="数据结构">
+  <meta name="description" content="对象的创建说到对象的创建，首先让我们看看 Java 中提供的几种对象创建方式：    Header 解释     使用new关键字 调用了构造函数   使用Class的newInstance方法 调用了构造函数   使用Constructor类的newInstance方法 调用了构造函数   使用clone方法 没有调用构造函数   使用反序列化 没有调用构造函数    无论何时我们调用一个对象的">
+<meta name="keywords" content="jvm">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java实现顺序表">
-<meta property="og:url" content="http://yoursite.com/2019/01/20/java实现顺序表/index.html">
+<meta property="og:title" content="对象创建的方式">
+<meta property="og:url" content="http://yoursite.com/2019/02/10/对象创建的方式/index.html">
 <meta property="og:site_name" content="sbing的博客">
-<meta property="og:description" content="平常学习中、都是用c/c++实现的、最近用java实现了顺序表。 线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。  结构体1234567891011public class MyArray &amp;#123;">
+<meta property="og:description" content="对象的创建说到对象的创建，首先让我们看看 Java 中提供的几种对象创建方式：    Header 解释     使用new关键字 调用了构造函数   使用Class的newInstance方法 调用了构造函数   使用Constructor类的newInstance方法 调用了构造函数   使用clone方法 没有调用构造函数   使用反序列化 没有调用构造函数    无论何时我们调用一个对象的">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-03-02T07:56:45.316Z">
+<meta property="og:updated_time" content="2019-03-02T15:15:46.059Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="java实现顺序表">
-<meta name="twitter:description" content="平常学习中、都是用c/c++实现的、最近用java实现了顺序表。 线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。  结构体1234567891011public class MyArray &amp;#123;">
+<meta name="twitter:title" content="对象创建的方式">
+<meta name="twitter:description" content="对象的创建说到对象的创建，首先让我们看看 Java 中提供的几种对象创建方式：    Header 解释     使用new关键字 调用了构造函数   使用Class的newInstance方法 调用了构造函数   使用Constructor类的newInstance方法 调用了构造函数   使用clone方法 没有调用构造函数   使用反序列化 没有调用构造函数    无论何时我们调用一个对象的">
 
 
 
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/01/20/java实现顺序表/">
+  <link rel="canonical" href="http://yoursite.com/2019/02/10/对象创建的方式/">
 
 
 
@@ -124,7 +124,7 @@
   };
 </script>
 
-  <title>java实现顺序表 | sbing的博客</title>
+  <title>对象创建的方式 | sbing的博客</title>
   
 
 
@@ -323,7 +323,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/20/java实现顺序表/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/对象创建的方式/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
@@ -340,7 +340,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">java实现顺序表
+          <h1 class="post-title" itemprop="name headline">对象创建的方式
 
               
             
@@ -366,7 +366,7 @@
                 
               
 
-              <time title="Created: 2019-01-20 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-20T17:01:21+08:00">2019-01-20</time>
+              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
             
 
             
@@ -383,7 +383,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-03-02 15:56:45" itemprop="dateModified" datetime="2019-03-02T15:56:45+08:00">2019-03-02</time>
+                <time title="Modified: 2019-03-02 23:15:46" itemprop="dateModified" datetime="2019-03-02T23:15:46+08:00">2019-03-02</time>
               
             
           </span>
@@ -400,7 +400,7 @@
                 <span class="post-meta-item-text">In</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
 
                 
                 
@@ -435,14 +435,52 @@
       
 
       
-        <p>平常学习中、都是用c/c++实现的、最近用java实现了顺序表。</p>
-<p>线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。 </p>
-<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyArray &#123;</span><br><span class="line">    public int[] data;</span><br><span class="line">    public int length; //数组元素个数</span><br><span class="line">    public int max;</span><br><span class="line"></span><br><span class="line">    // 构造器中 传入 数组的最大容量</span><br><span class="line">    public MyArray(int max) &#123;</span><br><span class="line">        this.max = max;</span><br><span class="line">        data = new int[max];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="CRUD"><a href="#CRUD" class="headerlink" title="CRUD"></a>CRUD</h1><h2 id="在第i个位置上插入元素"><a href="#在第i个位置上插入元素" class="headerlink" title="在第i个位置上插入元素"></a>在第i个位置上插入元素</h2><p>在顺序表的第i个位置插入元素e，首先将顺序表第i个位置的元素依次向后移动一个位置，然后将元素e插入第i个位置，移动元素要从后往前移动元素，即：先移动最后一个元素，在移动倒数第二个元素，依次类推；插入元素之前要判断插入的位置是否合法，顺序表是否已满，在插入元素之后要将表长Length++;</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 增  在第 i 个位置 插入 value</span><br><span class="line">   public void insert(int i,int value)&#123;</span><br><span class="line">       // 位置超过 抛异常</span><br><span class="line">       if(i &gt; length+1 || i &lt; 1)</span><br><span class="line">           throw new RuntimeException(&quot;插入位置不合法&quot;);</span><br><span class="line">       if(length &gt;= max)</span><br><span class="line">           throw new RuntimeException(&quot;数组容量已满&quot;);</span><br><span class="line"></span><br><span class="line">       for(int j=length; j&gt;=i; j--)&#123;</span><br><span class="line">           data[j] = data[j-1];</span><br><span class="line">       &#125;</span><br><span class="line">       data[i-1] = value;</span><br><span class="line">       length++;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="删除第i个元素"><a href="#删除第i个元素" class="headerlink" title="删除第i个元素"></a>删除第i个元素</h2><p>删除数据表中的第i个元素，需要将表中第i个元素之后的元素依次向前移动一位，将前面的元素覆盖掉。移动元素时要想将第i+1个元素移动到第i个位置，在将第i+2个元素移动i+1的位置，直到将最后一个元素移动到它的前一个位置，进行删除操作之前要判断顺序表是否为空，删除元素之后，将表长Length–;</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 删除 第i个位置的 元素</span><br><span class="line">   public int delete(int i)&#123;</span><br><span class="line">       if(i&lt;1 || i&gt;length)</span><br><span class="line">           throw new RuntimeException(&quot;删除位置不合法&quot;);</span><br><span class="line">       int value = data[i-1];</span><br><span class="line">       for(int j=i; j&lt;length; j++)</span><br><span class="line">           data[j-1] = data[j];</span><br><span class="line">       length--;</span><br><span class="line">       return value;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 遍历</span><br><span class="line">   public void display()&#123;</span><br><span class="line">       for(int i=0; i&lt;length; i++)</span><br><span class="line">           System.out.print(data[i]+&quot; &quot;);</span><br><span class="line">       System.out.println();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+        <h1 id="对象的创建"><a href="#对象的创建" class="headerlink" title="对象的创建"></a>对象的创建</h1><p>说到对象的创建，首先让我们看看 <code>Java</code> 中提供的几种对象创建方式：</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>使用new关键字</td>
+<td>调用了构造函数</td>
+</tr>
+<tr>
+<td>使用Class的newInstance方法</td>
+<td>调用了构造函数</td>
+</tr>
+<tr>
+<td>使用Constructor类的newInstance方法</td>
+<td>调用了构造函数</td>
+</tr>
+<tr>
+<td>使用clone方法</td>
+<td>没有调用构造函数</td>
+</tr>
+<tr>
+<td>使用反序列化</td>
+<td>没有调用构造函数</td>
+</tr>
+</tbody>
+</table>
+<p>无论何时我们调用一个对象的 <code>clone</code>方法， <code>JVM</code>都会创建一个新的对象，将前面对象的内容全部<strong>拷贝</strong>进去。用 <code>clone</code>方法创建对象并不会调用任何构造函数。</p>
+<p>为了使用 <code>clone</code>方法，我们需要先实现 <code>Cloneable</code>接口并实现其定义的 <code>clone</code>方法。</p>
+<p>本文以 <code>new</code>关键字为例，讲述 <code>JVM</code>堆中对象实例的创建过程如下：</p>
+<ol>
+<li>当虚拟机遇到一条 <code>new</code>指令时，首先会检查这个<strong>指令的参数</strong>能否在<strong>常量池</strong>中定位一个<strong>符号引用</strong>。然后检查这个<strong>符号引用</strong>的类字节码对象是否<strong>加载、解析和初始化</strong>。如果没有，将执行对应的类加载过程。</li>
+<li><strong>类加载</strong> 完成以后，虚拟机将会为新生对象<strong>分配</strong>内存区域，对象所需内存空间大小在类加载完成后就已确定。</li>
+<li><strong>内存分配</strong> 完成以后，虚拟机将分配到的内存空间都初始化为<strong>零值</strong>。</li>
+<li>虚拟机对对象进行一系列的<strong>设置</strong>，如<strong>所属类的元信息</strong>、<strong>对象的哈希码</strong>、<strong>对象GC分带年龄</strong> 、<strong>线程持有的锁</strong> 、<strong>偏向线程ID</strong> 等信息。这些信息存储在<strong>对象头</strong>( <code>ObjectHeader</code>)。</li>
+</ol>
+<p>上述工作完成以后，从虚拟机的角度来说，一个新的对象已经产生了。然而，从 <code>Java</code>程序的角度来说，对象创建才刚开始。</p>
+<h1 id="对象的布局"><a href="#对象的布局" class="headerlink" title="对象的布局"></a>对象的布局</h1><p><code>HotSpot</code>虚拟机中，对象在内存中存储的布局可以分为三块区域：<strong>对象头</strong>（ <code>Header</code>）、<strong>实例数据</strong>（ <code>InstanceData</code>）和<strong>对齐填充</strong>（ <code>Padding</code>）。</p>
+<h1 id="对象的访问定位"><a href="#对象的访问定位" class="headerlink" title="对象的访问定位"></a>对象的访问定位</h1><p><code>Java</code>程序需要通过 <code>JVM</code> 栈上的引用访问堆中的具体对象。对象的访问方式取决于 <code>JVM</code> 虚拟机的实现。目前主流的访问方式有 <strong>句柄</strong> 和 <strong>直接指针</strong> 两种方式。</p>
+<blockquote>
+<p><strong>指针：</strong> 指向对象，代表一个对象在内存中的起始地址。<strong>句柄：</strong> 可以理解为指向指针的指针，维护着对象的指针。句柄不直接指向对象，而是指向对象的指针（句柄不发生变化，指向固定内存地址），再由对象的指针指向对象的真实内存地址。</p>
+</blockquote>
 
       
     </div>
@@ -466,7 +504,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/数据结构/" rel="tag"># 数据结构</a>
+            <a href="/tags/jvm/" rel="tag"># jvm</a>
           
         </div>
       
@@ -479,8 +517,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/01/04/熔断器Hystrix/" rel="next" title="熔断器Hystrix">
-                <i class="fa fa-chevron-left"></i> 熔断器Hystrix
+              <a href="/2019/02/10/redis简介/" rel="next" title="redis简介">
+                <i class="fa fa-chevron-left"></i> redis简介
               </a>
             
           </div>
@@ -489,8 +527,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/01/21/java实现单链表/" rel="prev" title="java实现单链表">
-                java实现单链表 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/02/11/redis哨兵模式简单介绍/" rel="prev" title="redis哨兵模式简单介绍">
+                redis哨兵模式简单介绍 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -561,7 +599,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-count">26</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -582,7 +620,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">categories</span>
                   </a>
                 </div>
@@ -603,7 +643,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>
@@ -639,7 +681,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#结构体"><span class="nav-number">1.</span> <span class="nav-text">结构体</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CRUD"><span class="nav-number">2.</span> <span class="nav-text">CRUD</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#在第i个位置上插入元素"><span class="nav-number">2.1.</span> <span class="nav-text">在第i个位置上插入元素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除第i个元素"><span class="nav-number">2.2.</span> <span class="nav-text">删除第i个元素</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遍历"><span class="nav-number">2.3.</span> <span class="nav-text">遍历</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#对象的创建"><span class="nav-number">1.</span> <span class="nav-text">对象的创建</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对象的布局"><span class="nav-number">2.</span> <span class="nav-text">对象的布局</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对象的访问定位"><span class="nav-number">3.</span> <span class="nav-text">对象的访问定位</span></a></li></ol></div>
             
 
           </div>

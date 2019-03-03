@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="JVM 内存区域包括 PC计数器、Java虚拟机栈、本地方法栈、堆、方法区、运行时常量池 和 直接内存。 JVM内存区域JVM内存区域也称为 Java运行时数据区域。其中包括：程序计数器、虚拟机栈、本地方法栈、堆、静态方法区、静态常量池等。   注意：程序计数器、虚拟机栈、本地方法栈属于每个线程私有的；堆和方法区属于线程共享访问的。   PC计数器程序计数器（ ProgramCounterRegi">
+<meta name="keywords" content="jvm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm内存区域">
+<meta property="og:url" content="http://yoursite.com/2019/02/09/jvm内存区域/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="JVM 内存区域包括 PC计数器、Java虚拟机栈、本地方法栈、堆、方法区、运行时常量池 和 直接内存。 JVM内存区域JVM内存区域也称为 Java运行时数据区域。其中包括：程序计数器、虚拟机栈、本地方法栈、堆、静态方法区、静态常量池等。   注意：程序计数器、虚拟机栈、本地方法栈属于每个线程私有的；堆和方法区属于线程共享访问的。   PC计数器程序计数器（ ProgramCounterRegi">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/jvm2.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm3.jpg">
+<meta property="og:updated_time" content="2019-03-02T14:57:09.772Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jvm内存区域">
+<meta name="twitter:description" content="JVM 内存区域包括 PC计数器、Java虚拟机栈、本地方法栈、堆、方法区、运行时常量池 和 直接内存。 JVM内存区域JVM内存区域也称为 Java运行时数据区域。其中包括：程序计数器、虚拟机栈、本地方法栈、堆、静态方法区、静态常量池等。   注意：程序计数器、虚拟机栈、本地方法栈属于每个线程私有的；堆和方法区属于线程共享访问的。   PC计数器程序计数器（ ProgramCounterRegi">
+<meta name="twitter:image" content="http://yoursite.com/img/jvm2.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/02/09/jvm内存区域/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>jvm内存区域 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/09/jvm内存区域/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">jvm内存区域
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-09 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-09T17:01:21+08:00">2019-02-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 22:57:09" itemprop="dateModified" datetime="2019-03-02T22:57:09+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><code>JVM</code> 内存区域包括 <strong>PC计数器</strong>、<strong>Java虚拟机栈</strong>、<strong>本地方法栈</strong>、<strong>堆</strong>、<strong>方法区</strong>、<strong>运行时常量池</strong> 和 <strong>直接内存</strong>。</p>
+<h1 id="JVM内存区域"><a href="#JVM内存区域" class="headerlink" title="JVM内存区域"></a>JVM内存区域</h1><p><code>JVM</code><strong>内存区域</strong>也称为 <code>Java</code><strong>运行时数据区域</strong>。其中包括：<strong>程序计数器</strong>、<strong>虚拟机栈</strong>、<strong>本地方法栈</strong>、<strong>堆</strong>、<strong>静态方法区</strong>、<strong>静态常量池</strong>等。</p>
+<p><img src="/img/jvm2.jpg" alt=""></p>
+<blockquote>
+<p>注意：程序计数器、虚拟机栈、本地方法栈属于每个<strong>线程私有的</strong>；堆和方法区属于<strong>线程共享访问的</strong>。</p>
+</blockquote>
+<p><img src="/img/jvm3.jpg" alt=""></p>
+<h2 id="PC计数器"><a href="#PC计数器" class="headerlink" title="PC计数器"></a>PC计数器</h2><p>程序计数器（ <code>ProgramCounterRegister</code>）是一块<strong>较小</strong>的内存空间，它的作用可以看做是<strong>当前线程</strong>所执行的<strong>字节码行号指示器</strong>。</p>
+<ol>
+<li>当前线程所执行的字节码<strong>行号指示器</strong>。</li>
+<li>每个线程都有一个自己的 <code>PC</code>计数器。</li>
+<li>线程<strong>私有的</strong>，生命周期与线程相同，随 <code>JVM</code>启动而生， <code>JVM</code>关闭而死。</li>
+<li>线程执行 <code>Java</code>方法时，记录其正在执行的虚拟机<strong>字节码指令地址</strong>。</li>
+<li>线程执行 <code>Native</code>方法时，计数器记录为<strong>空</strong>( <code>Undefined</code>)。</li>
+<li>唯一在 <code>Java</code>虚拟机规范中没有规定任何 <code>OutOfMemoryError</code>情况区域。</li>
+</ol>
+<h2 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h2><p>线程<strong>私有</strong>内存空间，它的生命周期和线程相同。线程执行期间，每个方法执行时都会创建一个<strong>栈帧(Stack Frame)</strong> ，用于存储 <strong>局部变量表</strong>、<strong>操作数栈</strong> 、<strong>动态链接</strong>、<strong>方法出口</strong> 等信息。</p>
+<h2 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h2><p><strong>本地方法栈</strong>和 <code>Java</code><strong>虚拟机栈</strong>发挥的作用非常相似，主要区别是 <code>Java</code><strong>虚拟机栈</strong>执行的是 <code>Java</code><strong>方法服务</strong>，而<strong>本地方法栈</strong>执行 <code>Native</code><strong>方法服务</strong>(通常用C编写)。</p>
+<h2 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h2><p><code>Java</code>堆是被所有<strong>线程共享</strong>的<strong>最大</strong>的一块内存区域，在虚拟机启动时创建。此内存区域的唯一目的就是<strong>存放对象实例</strong>，几乎所有的对象实例都在这里分配内存。</p>
+<p>在 <code>Java</code>中，堆被划分成两个不同的区域：<strong>新生代</strong> ( <code>YoungGeneration</code>) 、<strong>老年代</strong>( <code>OldGeneration</code>) 。<strong>新生代</strong> ( <code>Young</code>) 又被划分为三个区域：<strong>一个</strong> <code>Eden</code>区和<strong>两个</strong><code>Survivor</code>区 - <code>FromSurvivor</code>区和 <code>ToSurvivor</code>区。</p>
+<blockquote>
+<p>简要归纳：新的对象分配是首先放在年轻代 ( <code>YoungGeneration</code>) 的 <code>Eden</code>区， <code>Survivor</code>区作为 <code>Eden</code>区和 <code>Old</code>区的缓冲，在 <code>Survivor</code>区的对象经历若干次收集仍然存活的，就会被转移到老年代 <code>Old</code>中。</p>
+</blockquote>
+<h2 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h2><p>方法区和 <code>Java</code>堆一样，为多个线程共享，它用于存储<strong>类信息</strong>、<strong>常量</strong>、<strong>静态常量</strong>和<strong>即时编译后的代码</strong>等数据。</p>
+<h2 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h2><p>运行时常量池是<strong>方法区</strong>的一部分， <code>Class</code>文件中除了有<strong>类的版本</strong>、<strong>字段</strong>、<strong>方法</strong>和<strong>接口</strong>等描述信息外， 还有一类信息是<strong>常量池</strong>，用于存储编译期间生成的各种<strong>字面量</strong>和<strong>符号引用</strong>。</p>
+<h2 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h2><p><strong>直接内存</strong>不属于虚拟机运行时数据区的一部分，也不是 <code>Java</code>虚拟机规范中定义的内存区域。 <code>JavaNIO</code>允许 <code>Java</code>程序直接访问<strong>直接内存</strong>，通常<strong>直接内存</strong>的速度会优于<strong>Java堆内存</strong>。因此，对于读写频繁、性能要求高的场景，可以考虑使用直接内存。</p>
+<h1 id="常见内存溢出异常"><a href="#常见内存溢出异常" class="headerlink" title="常见内存溢出异常"></a>常见内存溢出异常</h1><p>除了程序计数器外， <code>Java</code>虚拟机的其他运行时区域都有可能发生 <code>OutOfMemoryError</code>的异常，下面分别给出验证：</p>
+<h2 id="Java堆溢出"><a href="#Java堆溢出" class="headerlink" title="Java堆溢出"></a>Java堆溢出</h2><p><code>Java</code>堆能够存储对象实例。通过不断地创建对象，并保证 <code>GCRoots</code>到对象有可达路径来避免垃圾回收机制清除这些对象。 当对象数量到达最大堆的容量限制时就会产生 <code>OutOfMemoryError</code>异常。</p>
+<p>设置 <code>JVM</code>启动参数： <code>-Xms20M</code>设置堆的<strong>最小内存</strong>为 <code>20M</code>， <code>-Xmx20M</code>设置堆的<strong>最大内存</strong>和<strong>最小内存</strong>一样，这样可以防止 <code>Java</code>堆在内存不足时<strong>自动扩容</strong>。 <code>-XX:+HeapDumpOnOutOfMemoryError</code>参数可以让虚拟机在出现内存溢出异常时 <code>Dump</code>出<strong>内存堆</strong>运行时快照。</p>
+<h2 id="虚拟机和本地方法栈溢出"><a href="#虚拟机和本地方法栈溢出" class="headerlink" title="虚拟机和本地方法栈溢出"></a>虚拟机和本地方法栈溢出</h2><p>关于虚拟机栈和本地方法栈，分析内存异常类型可能存在以下两种：</p>
+<ul>
+<li>如果现场请求的<strong>栈深度</strong>大于虚拟机所允许的<strong>最大深度</strong>，将抛出 <code>StackOverflowError</code>异常。</li>
+<li>如果虚拟机在<strong>扩展栈</strong>时无法申请到足够的<strong>内存</strong>空间，可能会抛出 <code>OutOfMemoryError</code>异常。</li>
+</ul>
+<p>可以划分为两类问题，当栈空间无法分配时，到底时栈内存<strong>太小</strong>，还是<strong>已使用</strong>的栈内存<strong>过大</strong>。</p>
+<h2 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h2><h1 id="位置存储"><a href="#位置存储" class="headerlink" title="位置存储"></a>位置存储</h1><p><strong>运行时常量</strong>和<strong>字面量</strong>都存放于<strong>运行时常量池</strong>中，常量池又是方法区的一部分，因此两个区域的测试是一样的。</p>
+<p>方法区存放 <code>Class</code>相关的信息，比如<strong>类名</strong>、<strong>访问修饰符</strong>、<strong>常量池</strong>、<strong>字段描述</strong>、<strong>方法描述</strong>等。 </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jvm/" rel="tag"># jvm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/07/JVM总体概述/" rel="next" title="jvm总体概述">
+                <i class="fa fa-chevron-left"></i> jvm总体概述
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/10/redis简介/" rel="prev" title="redis简介">
+                redis简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JVM内存区域"><span class="nav-number">1.</span> <span class="nav-text">JVM内存区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#PC计数器"><span class="nav-number">1.1.</span> <span class="nav-text">PC计数器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java虚拟机栈"><span class="nav-number">1.2.</span> <span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#本地方法栈"><span class="nav-number">1.3.</span> <span class="nav-text">本地方法栈</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#堆"><span class="nav-number">1.4.</span> <span class="nav-text">堆</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法区"><span class="nav-number">1.5.</span> <span class="nav-text">方法区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行时常量池"><span class="nav-number">1.6.</span> <span class="nav-text">运行时常量池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直接内存"><span class="nav-number">1.7.</span> <span class="nav-text">直接内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#常见内存溢出异常"><span class="nav-number">2.</span> <span class="nav-text">常见内存溢出异常</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Java堆溢出"><span class="nav-number">2.1.</span> <span class="nav-text">Java堆溢出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟机和本地方法栈溢出"><span class="nav-number">2.2.</span> <span class="nav-text">虚拟机和本地方法栈溢出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#方法区和运行时常量池溢出"><span class="nav-number">2.3.</span> <span class="nav-text">方法区和运行时常量池溢出</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#位置存储"><span class="nav-number">3.</span> <span class="nav-text">位置存储</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

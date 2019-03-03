@@ -322,6 +322,201 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/02/jvm图解GC/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/02/jvm图解GC/" class="post-title-link" itemprop="url">jvm图解GC</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-02 17:01:21" itemprop="dateCreated datePublished" datetime="2019-03-02T17:01:21+08:00">2019-03-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:42:08" itemprop="dateModified" datetime="2019-03-03T16:42:08+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="GC的名词"><a href="#GC的名词" class="headerlink" title="GC的名词"></a>GC的名词</h1><h2 id="新生代GC（Minor-GC）"><a href="#新生代GC（Minor-GC）" class="headerlink" title="新生代GC（Minor GC）"></a>新生代GC（Minor GC）</h2><p>指发生在 <strong>新生代</strong> 的垃圾回收动作，因为 <code>Java</code> 对象大多都具备 <strong>朝生夕死</strong> 的特性，所以 <code>MinorGC</code> 通常 <strong>非常频繁</strong>，一般回收速度也比较快。</p>
+<h2 id="老年代GC（Major-GC）"><a href="#老年代GC（Major-GC）" class="headerlink" title="老年代GC（Major GC）"></a>老年代GC（Major GC）</h2><p>指发生在 <strong>老年代</strong> 的垃圾回收动作，出现了 <code>MajorGC</code>，经常会伴随至少一次的 <code>MinorGC</code>（发生这种情况，那么 <strong>整个堆</strong> 都 <code>GC</code> 一遍，通常称为 <code>FullGC</code>）。 <code>MajorGC</code> 的速度一般会比 <code>MinorGC</code> 慢 <code>10</code> 倍以上。</p>
+<h1 id="Minor-GC"><a href="#Minor-GC" class="headerlink" title="Minor GC"></a>Minor GC</h1><h2 id="Minor-GC过程"><a href="#Minor-GC过程" class="headerlink" title="Minor GC过程"></a>Minor GC过程</h2><p>假设现在Heap内存大小为20M，其中年轻代为10M，老年代为10M，年轻代中Eden区6M，From区2M，To区2M，新创建的对象首先往Eden区分配，当再次分配一个对象，假设大小为1M，此时Eden区已经没有足够空间来给这个对象分配内存，如图所示：</p>
+<p><img src="/img/jvm7.jpg" alt=""></p>
+<p>这时候触发一次Minor GC，把Eden区的存活对象转移到From区，非存活对象进行清理，然后给新创建的对象分配空间，存入Eden区</p>
+<p><img src="/img/jvm8.jpg" alt=""></p>
+<p>随着分配对象的增多，Eden区的空间又不足了：</p>
+<p><img src="/img/jvm9.jpg" alt=""></p>
+<p>这时候再触发一次Minor GC，清理掉Eden区和S1区的死亡对象，把存活对象转移到S2区，然后再给新对象分配内存：</p>
+<p><img src="/img/jvm10.jpg" alt=""></p>
+<p>From区和To区是相对的关系，哪个区中有对象，哪个区就是From区，比如，再进行一次Minor GC，会把存活对象转移到S1区，再为转移之前，S2区是From区，S1区是To区，转移后，S2区中没有存活对象，变为To区，而S1区变为From区：</p>
+<p><img src="/img/jvm11.jpg" alt=""></p>
+<h2 id="对象进入老年代的4种情况"><a href="#对象进入老年代的4种情况" class="headerlink" title="对象进入老年代的4种情况"></a>对象进入老年代的4种情况</h2><p>(1) 假如进行Minor GC时发现，存活的对象在ToSpace区中存不下，那么把存活的对象存入老年代</p>
+<p>(2) 大对象直接进入老年代</p>
+<p>假设新创建的对象很大，比如为5M(这个值可以通过PretenureSizeThreshold这个参数进行设置，默认3M)，那么即使Eden区有足够的空间来存放，也不会存放在Eden区，而是直接存入老年代</p>
+<p>(3) 长期存活的对象将进入老年代</p>
+<p>此外，如果对象在Eden出生并且经过1次Minor GC后仍然存活，并且能被To区容纳，那么将被移动到To区，并且把对象的年龄设置为1，对象没”熬过”一次Minor GC(没有被回收，也没有因为To区没有空间而被移动到老年代中)，年龄就增加一岁，当它的年龄增加到一定程度(默认15岁，配置参数-XX:MaxTenuringThreshold)，就会被晋升到老年代中</p>
+<p>(4) 动态对象年龄判定</p>
+<p>还有一种情况，如果在From空间中，相同年龄所有对象的大小总和大于From和To空间总和的一半，那么年龄大于等于该年龄的对象就会被移动到老年代，而不用等到15岁(默认)：</p>
+<h1 id="Full-GC"><a href="#Full-GC" class="headerlink" title="Full GC"></a>Full GC</h1><p>如果某个(些)对象(原来在内存中存活的对象或者新创建的对象)由于以上原因需要被移动到老年代中，而老年代中没有足够空间容纳这个(些)对象，那么会触发一次Full GC，Full GC会对整个Heap进行一次GC，如果Full GC后还有无法给新创建的对象分配内存，或者无法移动那些需要进入老年代中的对象，那么JVM抛出<strong>OutOfMemoryError</strong></p>
+<h1 id="空间分配担保"><a href="#空间分配担保" class="headerlink" title="空间分配担保"></a>空间分配担保</h1><p>在发生Minor GC之前，虚拟机会先检查老年代最大可用的连续空间是否大于新生代所有对象总空间，如果这个条件成立，那么Minor GC可以确保是安全的。如果不成立，则虚拟机会查看HandlerPromotionFailure这个参数设置的值(true或flase)是否允许担保失败(如果这个值为true，代表着JVM说，我允许在这种条件下尝试执行Minor GC，出了事我负责)。如果允许，那么会继续检查老年代最大可用的连续空间是否大于历次晋升到老年代对象的平均大小，如果大于，将尝试进行一次Minor GC，尽管这次Minor GC是有风险的；如果小于，或者HandlerPromotionFailure为false，那么这次Minor GC将升级为Full GC</p>
+<p>如果老年代最大可用的连续空间大于历次晋升到老年代对象的平均大小，那么在HandlerPromotionFailure为true的情况下，可以尝试进行一次Minor GC，但这是有风险的，如果本次将要晋升到老年代的对象很多，那么Minor GC还是无法执行，此时还得改为Full GC。</p>
+<p>HandlerPromotionFailure为true时，如果某次需要转移到老年代中的对象确实很多，老年代无法容纳，那么也会先尝试进行一次Minor GC，Minor GC无法执行时再进行Full GC，这样虽然绕了圈子，但我们还是建议把这个参数设置为true，因为我们要尽量避免Full GC。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/20/redis之列表/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -913,6 +1108,186 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/15/java实现单链表/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/15/java实现单链表/" class="post-title-link" itemprop="url">java实现单链表</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-15 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-15T17:01:21+08:00">2019-02-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:51:20" itemprop="dateModified" datetime="2019-03-03T16:51:20+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>还是发现 网上java实现的很乱很杂。自己实现了一个单链表。主要操作 就是 单链表的头插法、尾插法</p>
+<p>链表是一种插入和删除都比较快的数据结构，缺点是查找比较慢。</p>
+<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyLinkedList</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Node head = <span class="keyword">new</span> Node();<span class="comment">// 头结点</span></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> data;  <span class="comment">// 数据域</span></span><br><span class="line">        Node next; <span class="comment">// 指针域</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(<span class="keyword">int</span> data)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">this</span>.data = data;</span><br><span class="line">            next = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            next = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="功能实现"><a href="#功能实现" class="headerlink" title="功能实现"></a>功能实现</h1><h2 id="头插法建表"><a href="#头插法建表" class="headerlink" title="头插法建表"></a>头插法建表</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 头插法建表</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Node <span class="title">createList1</span><span class="params">(<span class="keyword">int</span>... data)</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(data == <span class="keyword">null</span> || data.length &lt; <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"数据为空"</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;data.length; i++)&#123;</span><br><span class="line">            <span class="keyword">int</span> value = data[i];</span><br><span class="line">            Node newNode = <span class="keyword">new</span> Node(value);</span><br><span class="line">            Node p = head.next;</span><br><span class="line">            newNode.next = p;</span><br><span class="line">            head.next = newNode;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> head;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>##尾插法建表</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 尾插法建表、需要增加一个 尾指针 引用</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createList2</span><span class="params">(<span class="keyword">int</span>... data)</span></span>&#123;</span><br><span class="line">       Node tail = head;</span><br><span class="line">       <span class="keyword">if</span>(data == <span class="keyword">null</span> || data.length &lt; <span class="number">1</span>)</span><br><span class="line">           <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"数据为空"</span>);</span><br><span class="line">       <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;data.length; i++)&#123;</span><br><span class="line">           <span class="keyword">int</span> value = data[i];</span><br><span class="line">           Node newNode = <span class="keyword">new</span> Node(value);</span><br><span class="line">           tail.next = newNode;</span><br><span class="line">           tail = newNode;</span><br><span class="line">       &#125;</span><br><span class="line">       tail.next = <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="第i个位置插入"><a href="#第i个位置插入" class="headerlink" title="第i个位置插入"></a>第i个位置插入</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在第i个位置上面 插入节点  1，2，3，4  在第2个位置 插入10  变为 1，10，2，3，4</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="keyword">int</span> i,<span class="keyword">int</span> value)</span></span>&#123;</span><br><span class="line">        Node p = head;</span><br><span class="line">        <span class="keyword">int</span> index = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> length = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (p.next != <span class="keyword">null</span>)&#123;</span><br><span class="line">            p = p.next;</span><br><span class="line">            length++;</span><br><span class="line">        &#125;</span><br><span class="line">        p = head;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(i &lt; <span class="number">1</span> || i &gt; length+<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"插入位置不合法"</span>);</span><br><span class="line">        <span class="keyword">while</span> (index &lt; i-<span class="number">1</span>)&#123;</span><br><span class="line">            p = p.next;</span><br><span class="line">            index++;</span><br><span class="line">        &#125;</span><br><span class="line">        Node newNode = <span class="keyword">new</span> Node(value);</span><br><span class="line">        newNode.next = p.next;</span><br><span class="line">        p.next = newNode;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">display</span><span class="params">()</span></span>&#123;</span><br><span class="line">       Node p = head;</span><br><span class="line">       <span class="keyword">while</span> (p.next != <span class="keyword">null</span>)&#123;</span><br><span class="line">           System.out.print(p.next.data+<span class="string">" "</span>);</span><br><span class="line">           p = p.next;</span><br><span class="line">       &#125;</span><br><span class="line">       System.out.println();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/redis数据结构/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1072,6 +1447,702 @@
 <li><strong>单线程</strong> 避免了 <strong>线程切换</strong> 和 <strong>竞态</strong> 产生的消耗，对于服务端开发来说，<strong>锁和线程切换</strong> 通常是性能杀手。</li>
 </ul>
 <p><strong>单线程</strong> 的问题：对于 <strong>每个命令</strong> 的 <strong>执行时间</strong> 是有要求的。如果某个命令 <strong>执行过长</strong>，会造成其他命令的 <strong>阻塞</strong>，对于 <code>Redis</code> 这种 <strong>高性能</strong> 的服务来说是致命的，所以 <code>Redis</code>是面向 <strong>快速执行</strong> 场景的数据库。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/jvm-gc/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/14/jvm-gc/" class="post-title-link" itemprop="url">jvm-gc</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-14 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-14T17:01:21+08:00">2019-02-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 10:25:04" itemprop="dateModified" datetime="2019-03-03T10:25:04+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><strong>程序计数器</strong>、<strong>虚拟机栈</strong>、<strong>本地方法栈</strong>三个区域随线程而生，随线程而灭；栈中的栈帧随着方法的进入和退出而有条不紊地执行着出栈和入栈操作。每一个栈帧中分配多少内存基本上是在类结构确定下来时就已知的，因此这几个区域的<strong>内存分配和回收</strong>都具备<strong>确定性</strong>。在这几个区域内不需要过多考虑回收的问题，<strong>因为方法结束或线程结束时，内存自然就跟随着回收了</strong>。</p>
+<p><code>Java</code><strong>堆</strong> 和 <strong>方法区</strong> 则不一样，一个接口中的多个实现类需要的内存可能不一样，一个方法中的多个分支需要的内存也可能不一样。我们只有在程序处于运行期间时才能知道会创建哪些对象，这部分<strong>内存的分配和回收</strong>都是<strong>动态的</strong>，<strong>垃圾收集器</strong>所关注的是这部分内存。</p>
+<h1 id="对象生死判定"><a href="#对象生死判定" class="headerlink" title="对象生死判定"></a>对象生死判定</h1><p>如何判断 <code>Java</code>中一个对象应该 <strong>“存活”</strong> 还是 <strong>“死去”</strong>，这是 垃圾回收器要做的第一件事。</p>
+<h2 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h2><p><code>Java</code> <strong>堆</strong> 中每个具体对象（<strong>不是引用</strong>）都有一个<strong>引用计数器</strong>。当一个对象被创建并初始化赋值后，该变量计数设置为 <code>1</code>。每当有一个地方引用它时，计数器值就<strong>加1</strong>。当引用<strong>失效</strong>时，即一个对象的某个引用超过了生命周期（出作用域后）或者被设置为一个新值时，计数器值就<strong>减1</strong>。任何引用计数为 <code>0</code>的对象可以被当作<strong>垃圾收集</strong>。当一个对象被垃圾收集时，它引用的任何对象计数减1。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>引用计数收集器执行简单，判定效率高，交织在程序运行中。对程序不被长时间打断的实时环境比较有利。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>难以检测出对象之间的循环引用。同时，引用计数器增加了程序执行的开销。所以Java语言并没有选择这种算法进行垃圾回收。</p>
+<h2 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h2><p><strong>可达性分析算法</strong>也叫<strong>根搜索算法</strong>，通过一系列的称为 <code>GCRoots</code> 的对象作为起点，然后向下搜索。搜索所走过的<strong>路径</strong>称为引用链 （ <code>ReferenceChain</code>）， 当一个<strong>对象</strong>到 <code>GCRoots</code> 没有任何<strong>引用链</strong>相连时, 即该对象<strong>不可达</strong>，也就说明此对象是 <strong>不可用的</strong>。</p>
+<p><strong>GC根对象</strong></p>
+<ol>
+<li>在 <code>Java</code>中, 可作为 <code>GCRoots</code>的对象包括以下四种：</li>
+<li><strong>虚拟机栈</strong>（栈帧中的<strong>本地变量表</strong>）中引用的对象；</li>
+<li><strong>本地方法栈</strong> 中 <code>JNI</code> （ <code>Native</code>方法）引用的变量；</li>
+<li><strong>方法区</strong> 中<strong>类静态属性</strong>引用的变量；</li>
+<li><strong>方法区</strong> 中<strong>常量</strong>引用的变量。</li>
+</ol>
+<p>JVM中用到的所有现代GC算法在回收前都会先找出所有仍存活的对象。可达性分析算法是从离散数学中的图论引入的，程序把所有的引用关系看作一张图。</p>
+<h1 id="对象引用分类"><a href="#对象引用分类" class="headerlink" title="对象引用分类"></a>对象引用分类</h1><h2 id="强引用-Strong-Reference"><a href="#强引用-Strong-Reference" class="headerlink" title="强引用(Strong Reference)"></a>强引用(Strong Reference)</h2><p>在代码中普遍存在的，类似 <code>Objectobj=newObject()</code>这类引用，只要强引用还在，垃圾收集器永远不会回收掉被引用的对象。</p>
+<h2 id="软引用-Sofe-Reference"><a href="#软引用-Sofe-Reference" class="headerlink" title="软引用(Sofe Reference)"></a>软引用(Sofe Reference)</h2><p><strong>有用但并非必需</strong> 的对象，可用 <code>SoftReference</code>类来实现软引用。在系统将要发生<strong>内存溢出异常</strong>之前，将会把这些对象列进回收范围之中进行<strong>二次回收</strong>。如果这次回收还没有足够的内存，才会抛出内存溢出异常。</p>
+<h2 id="弱引用-Weak-Reference"><a href="#弱引用-Weak-Reference" class="headerlink" title="弱引用(Weak Reference)"></a>弱引用(Weak Reference)</h2><p><strong>非必需</strong> 的对象，但它的<strong>强度</strong>比软引用更弱，被弱引用关联的对象<strong>只能</strong>生存到下一次垃圾收集发生之前， <code>JDK</code>提供了 <code>WeakReference</code>类来实现弱引用。无论当前内存是否足够，用软引用相关联的对象都会被回收掉。</p>
+<h2 id="虚引用-Phantom-Reference"><a href="#虚引用-Phantom-Reference" class="headerlink" title="虚引用(Phantom Reference)"></a>虚引用(Phantom Reference)</h2><p>虚引用也称为幽灵引用或幻影引用，是最弱的一种引用关系， <code>JDK</code>提供了 <code>PhantomReference</code>类来实现虚引用。为一个对象设置虚引用的唯一目的是：能在这个对象在<strong>垃圾回收器</strong>回收时收到一个<strong>系统通知</strong>。</p>
+<h1 id="finalize-二次标记"><a href="#finalize-二次标记" class="headerlink" title="finalize()二次标记"></a>finalize()二次标记</h1><p>一个对象是否应该在垃圾回收器在 <code>GC</code>时回收，至少要经历<strong>两次标记过程</strong>。</p>
+<p>第一次标记过程，通过<strong>可达性分析算法</strong>分析对象是否与 <code>GCRoots</code>可达。经过第一次标记，并且被筛选为<strong>不可达</strong>的对象会进行第二次标记。</p>
+<p>第二次标记过程，判断不可达对象是否有必要执行 <code>finalize</code>方法。执行条件是当前对象的 <code>finalize</code>方法被重写，并且还未被系统调用过。如果允许执行那么这个对象将会被放到一个叫 <code>F-Query</code>的队列中，等待被执行。</p>
+<blockquote>
+<p><strong>注意</strong>：由于 <code>finalize</code>由一个优先级比较低的 <code>Finalizer</code>线程运行，所以该对象的的 <code>finalize</code>方法不一定被执行，即使被执行了，也不保证 <code>finalize</code>方法一定会执行完。如果对象第二次小规模标记，即 <code>finalize</code>方法中拯救自己，只需要重新和引用链上的任一对象建立关联即可。</p>
+</blockquote>
+<h1 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h1><h2 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h2><p>标记-清除算法对<strong>根集合</strong>进行扫描，对<strong>存活</strong>的对象进行标记。标记完成后，再对整个空间内<strong>未被标记</strong>的对象扫描，进行回收。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>实现简单，不需要进行对象进行移动。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>标记、清除过程效率低，产生大量不连续的内存碎片，提高了垃圾回收的频率。</p>
+<h2 id="复制算法"><a href="#复制算法" class="headerlink" title="复制算法"></a>复制算法</h2><p>这种收集算法解决了标记清除算法存在的效率问题。它将内存区域划分成相同的两个<strong>内存块</strong>。每次仅使用一半的空间， <code>JVM</code>生成的新对象放在一半空间中。当一半空间用完时进行 <code>GC</code>，把可到达对象复制到另一半空间，然后把使用过的内存空间一次清理掉。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>按顺序分配内存即可，实现简单、运行高效，不用考虑内存碎片。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>可用的内存大小缩小为原来的一半，对象存活率高时会频繁进行复制。</p>
+<h2 id="标记-整理算法"><a href="#标记-整理算法" class="headerlink" title="标记-整理算法"></a>标记-整理算法</h2><p><strong>标记-整理算法</strong> 采用和 <strong>标记-清除算法</strong> 一样的方式进行对象的标记，但后续不直接对可回收对象进行清理，而是将所有的<strong>存活对象</strong>往一端<strong>空闲空间</strong>移动，然后清理掉端边界以外的内存空间。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>解决了标记-清理算法存在的内存碎片问题。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>仍需要进行局部对象移动，一定程度上降低了效率。</p>
+<h2 id="分代收集算法"><a href="#分代收集算法" class="headerlink" title="分代收集算法"></a>分代收集算法</h2><p>当前商业虚拟机都采用<strong>分代收集</strong>的垃圾收集算法。分代收集算法，顾名思义是根据对象的<strong>存活周期</strong>将内存划分为几块。一般包括<strong>年轻代</strong>、<strong>老年代</strong> 和 <strong>永久代</strong>，如图</p>
+<p><img src="/img/jvm4.jpg" alt=""></p>
+<h3 id="新生代（Young-generation）"><a href="#新生代（Young-generation）" class="headerlink" title="新生代（Young generation）"></a>新生代（Young generation）</h3><p>绝大多数最新被创建的对象会被分配到这里，由于<strong>大部分对象</strong>在创建后会很快变得<strong>不可达</strong>，所以很多对象被创建在<strong>新生代</strong>，然后<strong>消失</strong>。对象从这个区域消失的过程我们称之为 <code>minor GC</code>。</p>
+<p><strong>新生代</strong> 中存在一个 <code>Eden</code>区和两个 <code>Survivor</code>区。新对象会首先分配在 <code>Eden</code>中（如果新对象过大，会直接分配在老年代中）。在 <code>GC</code>中， <code>Eden</code>中的对象会被移动到 <code>Survivor</code>中，直至对象满足一定的年纪（定义为熬过 <code>GC</code>的次数），会被移动到<strong>老年代</strong>。</p>
+<p>可以设置<strong>新生代</strong>和<strong>老年代</strong>的相对大小。这种方式的优点是新生代大小会随着整个<strong>堆</strong>大小<strong>动态扩展</strong>。参数 <code>-XX:NewRatio</code> 设置<strong>老年代</strong>与<strong>新生代</strong>的比例。例如 <code>-XX:NewRatio=8</code> 指定 <strong>老年代/新生代</strong> 为 <code>8/1</code>. <strong>老年代</strong> 占堆大小的 <code>7/8</code> ，<strong>新生代</strong>占堆大小的 <code>1/8</code>（默认即是 <code>1/8</code>）。</p>
+<h3 id="老年代（Old-generation）"><a href="#老年代（Old-generation）" class="headerlink" title="老年代（Old generation）"></a>老年代（Old generation）</h3><p>对象没有变得不可达，并且从新生代中<strong>存活</strong>下来，会被<strong>拷贝</strong>到这里。其所占用的空间要比新生代多。也正由于其相对<strong>较大的空间</strong>，发生在<strong>老年代</strong>上的 <code>GC</code>要比<strong>新生代</strong>要<strong>少得多</strong>。对象从<strong>老年代</strong>中消失的过程，可以称之为 <code>major GC</code>（或者 <code>full GC</code>）。</p>
+<h3 id="永久代（permanent-generation）"><a href="#永久代（permanent-generation）" class="headerlink" title="永久代（permanent generation）"></a>永久代（permanent generation）</h3><p>像一些<strong>类的层级信息</strong>，<strong>方法数据</strong> 和<strong>方法信息</strong>（如<strong>字节码</strong>，<strong>栈</strong> 和 <strong>变量大小</strong>），<strong>运行时常量池</strong>（ <code>JDK7</code>之后移出<strong>永久代</strong>），已确定的<strong>符号引用</strong>和<strong>虚方法表</strong>等等。它们几乎都是<strong>静态的</strong>并且<strong>很少</strong>被<strong>卸载和回收</strong>，在 <code>JDK8</code>之前的 <code>HotSpot</code>虚拟机中，类的这些<strong>“永久的”</strong> 数据存放在一个叫做<strong>永久代</strong>的区域。</p>
+<p>永久代一段<strong>连续的内存空间</strong>，我们在 <code>JVM</code>启动之前可以通过设置 <code>-XX:MaxPermSize</code>的值来控制永久代的大小。但是 <code>JDK8</code>之后取消了永久代，这些<strong>元数据</strong>被移到了一个与堆<strong>不相连</strong>的称为<strong>元空间</strong> ( <code>Metaspace</code>) 的<strong>本地内存区域</strong>。</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><h4 id="JDK8堆内存一般是划分为年轻代和老年代，不同年代-根据自身特性采用不同的垃圾收集算法。"><a href="#JDK8堆内存一般是划分为年轻代和老年代，不同年代-根据自身特性采用不同的垃圾收集算法。" class="headerlink" title="JDK8堆内存一般是划分为年轻代和老年代，不同年代 根据自身特性采用不同的垃圾收集算法。"></a><code>JDK8</code>堆内存一般是划分为<strong>年轻代</strong>和<strong>老年代</strong>，<strong>不同年代</strong> 根据自身特性采用<strong>不同的垃圾收集算法</strong>。</h4><p>对于<strong>新生代</strong>，每次 <code>GC</code>时都有<strong>大量</strong>的对象死亡，只有<strong>少量</strong>对象存活。考虑到复制成本低，适合采用<strong>复制算法</strong>。因此有了 <code>FromSurvivor</code>和 <code>ToSurvivor</code>区域。</p>
+<p>对于<strong>老年代</strong>，因为对象<strong>存活率高</strong>，没有额外的内存空间对它进行担保。因而适合采用<strong>标记-清理算法</strong>和<strong>标记-整理算法</strong>进行回收。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/java实现顺序表/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/14/java实现顺序表/" class="post-title-link" itemprop="url">java实现顺序表</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-14 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-14T17:01:21+08:00">2019-02-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:53:36" itemprop="dateModified" datetime="2019-03-03T16:53:36+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>平常学习中、都是用c/c++实现的、最近用java实现了顺序表。</p>
+<p>线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。 </p>
+<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyArray &#123;</span><br><span class="line">    public int[] data;</span><br><span class="line">    public int length; //数组元素个数</span><br><span class="line">    public int max;</span><br><span class="line"></span><br><span class="line">    // 构造器中 传入 数组的最大容量</span><br><span class="line">    public MyArray(int max) &#123;</span><br><span class="line">        this.max = max;</span><br><span class="line">        data = new int[max];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="CRUD"><a href="#CRUD" class="headerlink" title="CRUD"></a>CRUD</h1><h2 id="在第i个位置上插入元素"><a href="#在第i个位置上插入元素" class="headerlink" title="在第i个位置上插入元素"></a>在第i个位置上插入元素</h2><p>在顺序表的第i个位置插入元素e，首先将顺序表第i个位置的元素依次向后移动一个位置，然后将元素e插入第i个位置，移动元素要从后往前移动元素，即：先移动最后一个元素，在移动倒数第二个元素，依次类推；插入元素之前要判断插入的位置是否合法，顺序表是否已满，在插入元素之后要将表长Length++;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 增  在第 i 个位置 插入 value</span><br><span class="line">   public void insert(int i,int value)&#123;</span><br><span class="line">       // 位置超过 抛异常</span><br><span class="line">       if(i &gt; length+1 || i &lt; 1)</span><br><span class="line">           throw new RuntimeException(&quot;插入位置不合法&quot;);</span><br><span class="line">       if(length &gt;= max)</span><br><span class="line">           throw new RuntimeException(&quot;数组容量已满&quot;);</span><br><span class="line"></span><br><span class="line">       for(int j=length; j&gt;=i; j--)&#123;</span><br><span class="line">           data[j] = data[j-1];</span><br><span class="line">       &#125;</span><br><span class="line">       data[i-1] = value;</span><br><span class="line">       length++;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="删除第i个元素"><a href="#删除第i个元素" class="headerlink" title="删除第i个元素"></a>删除第i个元素</h2><p>删除数据表中的第i个元素，需要将表中第i个元素之后的元素依次向前移动一位，将前面的元素覆盖掉。移动元素时要想将第i+1个元素移动到第i个位置，在将第i+2个元素移动i+1的位置，直到将最后一个元素移动到它的前一个位置，进行删除操作之前要判断顺序表是否为空，删除元素之后，将表长Length–;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 删除 第i个位置的 元素</span><br><span class="line">   public int delete(int i)&#123;</span><br><span class="line">       if(i&lt;1 || i&gt;length)</span><br><span class="line">           throw new RuntimeException(&quot;删除位置不合法&quot;);</span><br><span class="line">       int value = data[i-1];</span><br><span class="line">       for(int j=i; j&lt;length; j++)</span><br><span class="line">           data[j-1] = data[j];</span><br><span class="line">       length--;</span><br><span class="line">       return value;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 遍历</span><br><span class="line">   public void display()&#123;</span><br><span class="line">       for(int i=0; i&lt;length; i++)</span><br><span class="line">           System.out.print(data[i]+&quot; &quot;);</span><br><span class="line">       System.out.println();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/13/jvm类加载器详解/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/13/jvm类加载器详解/" class="post-title-link" itemprop="url">jvm类加载器详解</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-13 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-13T17:01:21+08:00">2019-02-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:55:03" itemprop="dateModified" datetime="2019-03-03T16:55:03+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><img src="/img/jvm5.jpg" alt=""></p>
+<h1 id="类加载器是什么"><a href="#类加载器是什么" class="headerlink" title="类加载器是什么"></a>类加载器是什么</h1><p>类加载器简言之，就是用于把 <code>.class</code>文件中的<strong>字节码信息</strong>转化为具体 <code>的java.lang.Class</code><strong>对象</strong>的过程的工具。</p>
+<p>具体过程：</p>
+<ol>
+<li>在实际类加载过程中， <code>JVM</code>会将所有的 <code>.class</code>字节码文件中的<strong>二进制数据</strong>读入内存中，导入运行时数据区的<strong>方法区</strong>中。</li>
+<li>当一个类首次被<strong>主动加载</strong>或<strong>被动加载</strong>时，类加载器会对此类执行类加载的流程 – <strong>加载</strong>、<strong>连接</strong>（<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>）、<strong>初始化</strong>。</li>
+<li>如果类加载成功，<strong>堆内存</strong>中会产生一个新的 <code>Class</code>对象， <code>Class</code>对象封装了类在<strong>方法区</strong>内的<strong>数据结构</strong>。</li>
+</ol>
+<p><img src="/img/jvm6.jpg" alt=""></p>
+<h1 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h1><p>类加载的过程分为三个步骤(五个阶段) ：<strong>加载</strong> -&gt; <strong>连接</strong>（<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>）-&gt; <strong>初始化</strong>。</p>
+<p><strong>加载</strong>、<strong>验证</strong>、<strong>准备</strong>和<strong>初始化</strong>这四个阶段发生的顺序是<strong>确定的</strong>，而<strong>解析阶段</strong>可以在初始化阶段之后发生，也称为<strong>动态绑定</strong>或<strong>晚期绑定</strong>。</p>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>加载：查找并加载类的<strong>二进制数据</strong>的过程。</p>
+<p>加载的过程描述：</p>
+<ol>
+<li>通过类的<strong>全限定名</strong>定位 <code>.class</code>文件，并获取其<strong>二进制字节流</strong>。</li>
+<li>把字节流所代表的<strong>静态存储结构</strong>转换为<strong>方法区</strong>的<strong>运行时数据结构</strong>。</li>
+<li>在 <code>Java</code><strong>堆</strong>中生成一个此类的 <code>java.lang.Class</code>对象，作为方法区中这些数据的<strong>访问入口</strong>。</li>
+</ol>
+<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><p>连接：包括<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>三步。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>验证：确保被加载的类的<strong>正确性</strong>。验证是连接阶段的第一步，用于确保 <code>Class</code>字节流中的信息是否符合虚拟机的要求。</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>准备：为类的<strong>静态变量</strong>分配内存，并将其初始化为<strong>默认值</strong>。准备过程通常分配一个结构用来存储类信息，这个结构中包含了类中定义的<strong>成员变量</strong>，<strong>方法</strong>和<strong>接口信息</strong>等。</p>
+<p>具体行为：</p>
+<ul>
+<li>这时候进行内存分配的仅包括<strong>类变量</strong>( <code>static</code>)，而不包括<strong>实例变量</strong>，<strong>实例变量</strong>会在对象<strong>实例化</strong>时随着对象一块分配在 <code>Java</code><strong>堆</strong>中。</li>
+<li>这里所设置的<strong>初始值</strong>通常情况下是数据类型<strong>默认的零值</strong>（如 <code>0</code>、 <code>0L</code>、 <code>null</code>、 <code>false</code>等），而不是被在 <code>Java</code>代码中被<strong>显式赋值</strong>。</li>
+</ul>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>解析：把类中对<strong>常量池</strong>内的<strong>符号引用</strong>转换为<strong>直接引用</strong>。</p>
+<p>解析动作主要针对<strong>类或接口</strong>、<strong>字段</strong>、<strong>类方法</strong>、<strong>接口方法</strong>、<strong>方法类型</strong>、<strong>方法句柄</strong>和<strong>调用点限定符</strong>等7类符号引用进行。</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>初始化：对<strong>类静态变量</strong>赋予正确的初始值 (注意和连接时的<strong>解析过程</strong>区分开)。</p>
+<h3 id="初始化的目标"><a href="#初始化的目标" class="headerlink" title="初始化的目标"></a>初始化的目标</h3><ul>
+<li>实现对声明<strong>类静态变量</strong>时指定的初始值的初始化；</li>
+<li>实现对使用<strong>静态代码块</strong>设置的初始值的初始化。</li>
+</ul>
+<h3 id="初始化的步骤"><a href="#初始化的步骤" class="headerlink" title="初始化的步骤"></a>初始化的步骤</h3><ol>
+<li>如果此类没被<strong>加载</strong>、<strong>连接</strong>，则先<strong>加载</strong>、<strong>连接</strong>此类；</li>
+<li>如果此类的<strong>直接父类</strong>还未被初始化，则先<strong>初始化</strong>其直接父类；</li>
+<li>如果类中有<strong>初始化语句</strong>，则按照顺序依次执行初始化语句。</li>
+</ol>
+<h3 id="初始化的时机"><a href="#初始化的时机" class="headerlink" title="初始化的时机"></a>初始化的时机</h3><ul>
+<li>创建类的实例( <code>new</code>关键字)；</li>
+<li><code>java.lang.reflect</code>包中的方法(如： <code>Class.forName(“xxx”)</code>)；</li>
+<li>对类的<strong>静态变量</strong>进行访问或赋值；</li>
+<li>访问调用类的<strong>静态方法</strong>；</li>
+<li>初始化一个类的<strong>子类</strong>，<strong>父类</strong>本身也会被初始化；</li>
+<li>作为程序的<strong>启动入口</strong>，包含 <code>main</code>方法(如： <code>SpringBoot</code>入口类)。</li>
+</ul>
+<h1 id="类的主动引用和被动引用"><a href="#类的主动引用和被动引用" class="headerlink" title="类的主动引用和被动引用"></a>类的主动引用和被动引用</h1><h2 id="主动引用"><a href="#主动引用" class="headerlink" title="主动引用"></a>主动引用</h2><p>主动引用：在类加载阶段，只执行<strong>加载</strong>、<strong>连接</strong>操作，不执行<strong>初始化</strong>操作。</p>
+<h3 id="主动引用的几种形式"><a href="#主动引用的几种形式" class="headerlink" title="主动引用的几种形式"></a>主动引用的几种形式</h3><ul>
+<li>创建类的实例( <code>new</code>关键字)；</li>
+<li><code>java.lang.reflect</code>包中的方法(如： <code>Class.forName(“xxx”)</code>)；</li>
+<li>对类的<strong>静态变量</strong>进行访问或赋值；</li>
+<li>访问调用类的<strong>静态方法</strong>；</li>
+<li>初始化一个类的<strong>子类</strong>，<strong>父类</strong>本身也会被初始化；</li>
+<li>作为程序的<strong>启动入口</strong>，包含 <code>main</code>方法(如： <code>SpringBoot</code>入口类)。</li>
+</ul>
+<h2 id="被动引用"><a href="#被动引用" class="headerlink" title="被动引用"></a>被动引用</h2><p>被动引用： 在类加载阶段，会执行<strong>加载</strong>、<strong>连接</strong>和<strong>初始化</strong>操作。</p>
+<p>被动引用的几种形式：</p>
+<ol>
+<li>通过子类引用<strong>父类</strong>的的<strong>静态字段</strong>，不会导致<strong>子类</strong>初始化；</li>
+<li>定义类的<strong>数组引用</strong>而<strong>不赋值</strong>，不会触发此类的初始化；</li>
+<li>访问类定义的<strong>常量</strong>，不会触发此类的初始化。</li>
+</ol>
+<h1 id="三种类加载器"><a href="#三种类加载器" class="headerlink" title="三种类加载器"></a>三种类加载器</h1><p>类加载器：<strong>类加载器</strong>负责加载程序中的<strong>类型</strong>（类和接口），并赋予唯一的名字予以标识。</p>
+<ul>
+<li><code>BootstrapClassloader</code> 是在 <code>Java</code>虚拟机启动后初始化的。</li>
+<li><code>BootstrapClassloader</code> 负责加载 <code>ExtClassLoader</code>，并且将 <code>ExtClassLoader</code>的父加载器设置为 <code>BootstrapClassloader。</code></li>
+<li><code>BootstrapClassloader</code> 加载完 <code>ExtClassLoader</code> 后，就会加载 <code>AppClassLoader</code>，并且将 <code>AppClassLoader</code> 的父加载器指定为 <code>ExtClassLoader</code>。</li>
+</ul>
+<h1 id="双亲委托机制"><a href="#双亲委托机制" class="headerlink" title="双亲委托机制"></a>双亲委托机制</h1><p>核心思想：其一，<strong>自底向上</strong>检查类是否<strong>已加载</strong>；其二，<strong>自顶向下</strong>尝试<strong>加载类</strong>。</p>
+<p>具体加载过程</p>
+<ol>
+<li>当 <code>AppClassLoader</code>加载一个 <code>class</code>时，它首先不会自己去尝试加载这个类，而是把类加载请求<strong>委派</strong>给<strong>父类加载器</strong> <code>ExtClassLoader</code>去完成。</li>
+<li>当 <code>ExtClassLoader</code>加载一个 <code>class</code>时，它首先也不会自己去尝试加载这个类，而是把类加载请求<strong>委派</strong>给 <code>BootStrapClassLoader</code>去完成。</li>
+<li>如果 <code>BootStrapClassLoader</code>加载失败（例如在 <code>%JAVA_HOME%/jre/lib</code>里未查找到该 <code>class</code>），会使用 <code>ExtClassLoader</code>来尝试加载；</li>
+<li>如果 <code>ExtClassLoader</code>也加载失败，则会使用 <code>AppClassLoader</code>来加载，如果 <code>AppClassLoader</code>也加载失败，则会报出异常 <code>ClassNotFoundException</code>。</li>
+</ol>
+<blockquote>
+<p><code>ClassLoader</code>通过 <code>loadClass()</code>方法实现了<strong>双亲委托机制</strong>，用于类的<strong>动态加载</strong>。</p>
+</blockquote>
+<h1 id="类的动态加载"><a href="#类的动态加载" class="headerlink" title="类的动态加载"></a>类的动态加载</h1><h2 id="类的几种加载方式"><a href="#类的几种加载方式" class="headerlink" title="类的几种加载方式"></a>类的几种加载方式</h2><ul>
+<li>通过<strong>命令行</strong>启动时由 <code>JVM</code>初始化加载；</li>
+<li>通过 <code>Class.forName()</code>方法动态加载；</li>
+<li>通过 <code>ClassLoader.loadClass()</code>方法动态加载。</li>
+</ul>
+<h2 id="Class-forName-和ClassLoader-loadClass"><a href="#Class-forName-和ClassLoader-loadClass" class="headerlink" title="Class.forName()和ClassLoader.loadClass()"></a>Class.forName()和ClassLoader.loadClass()</h2><ul>
+<li><strong>Class.forName()</strong>：把类的 <code>.class</code>文件加载到 <code>JVM</code>中，对类进行解释的同时执行类中的 <code>static</code><strong>静态代码块</strong>；</li>
+<li><strong>ClassLoader.loadClass()</strong>：只是把.class文件加载到 <code>JVM</code>中，不会执行 <code>static</code><strong>代码块</strong>中的内容，只有在 <code>newInstance</code>才会去执行。</li>
+</ul>
+<h1 id="对象的初始化"><a href="#对象的初始化" class="headerlink" title="对象的初始化"></a>对象的初始化</h1><p>静态变量/静态代码块 -&gt; 普通代码块 -&gt; 构造函数</p>
+<ol>
+<li>父类<strong>静态变量</strong>和<strong>静态代码块</strong>（先声明的先执行）；</li>
+<li>子类<strong>静态变量</strong>和<strong>静态代码块</strong>（先声明的先执行）；</li>
+<li>父类<strong>普通成员变量</strong>和<strong>普通代码块</strong>（先声明的先执行）；</li>
+<li>父类的<strong>构造函数</strong>；</li>
+<li>子类<strong>普通成员变量</strong>和<strong>普通代码块</strong>（先声明的先执行）；</li>
+<li>子类的<strong>构造函数</strong>。</li>
+</ol>
+<h1 id="自定义类加载器"><a href="#自定义类加载器" class="headerlink" title="自定义类加载器"></a>自定义类加载器</h1><blockquote>
+<p><strong>Step 1</strong>：定义待加载的目标类 <code>Parent.java</code>和 <code>Children.java</code>。</p>
+</blockquote>
+<blockquote>
+<p><strong>Step 2</strong>：实现自定义类加载器 <code>CustomClassLoader</code> extends ClassLoader </p>
+</blockquote>
 
           
         
@@ -1319,950 +2390,11 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/11/redis哨兵模式简单介绍/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/11/redis哨兵模式简单介绍/" class="post-title-link" itemprop="url">redis哨兵模式简单介绍</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-11 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-11T17:01:21+08:00">2019-02-11</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:19:20" itemprop="dateModified" datetime="2019-03-02T15:19:20+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>Redis</code> 的 <strong>主从复制</strong> 模式下，一旦 <strong>主节点</strong> 由于故障不能提供服务，需要手动将 <strong>从节点</strong> 晋升为 <strong>主节点</strong>，同时还要通知 <strong>客户端</strong> 更新 <strong>主节点地址</strong>，这种故障处理方式从一定程度上是无法接受的。 <code>Redis2.8</code> 以后提供了 <code>RedisSentinel</code> <strong>哨兵机制</strong>来解决这个问题。</p>
-<h1 id="Redis高可用概述"><a href="#Redis高可用概述" class="headerlink" title="Redis高可用概述"></a>Redis高可用概述</h1><p>在 <code>Redis</code> 中，实现 <strong>高可用</strong> 的技术主要包括 <strong>持久化</strong>、<strong>复制</strong>、<strong>哨兵</strong> 和 <strong>集群</strong>，下面简单说明它们的作用，以及解决了什么样的问题：</p>
-<ul>
-<li><strong>持久化</strong>：持久化是 <strong>最简单的</strong> 高可用方法。它的主要作用是 <strong>数据备份</strong>，即将数据存储在 <strong>硬盘</strong>，保证数据不会因进程退出而丢失。</li>
-<li><strong>复制</strong>：复制是高可用 <code>Redis</code> 的基础，<strong>哨兵</strong> 和 <strong>集群</strong> 都是在 <strong>复制基础</strong> 上实现高可用的。复制主要实现了数据的多机备份以及对于读操作的负载均衡和简单的故障恢复。缺陷是故障恢复无法自动化、写操作无法负载均衡、存储能力受到单机的限制。</li>
-<li><strong>哨兵</strong>：在复制的基础上，哨兵实现了 <strong>自动化</strong> 的 <strong>故障恢复</strong>。缺陷是 <strong>写操作</strong> 无法 <strong>负载均衡</strong>，<strong>存储能力</strong> 受到 <strong>单机</strong> 的限制。</li>
-<li><strong>集群</strong>：通过集群， <code>Redis</code> 解决了 <strong>写操作</strong> 无法 <strong>负载均衡</strong> 以及 <strong>存储能力</strong> 受到 <strong>单机限制</strong> 的问题，实现了较为 <strong>完善</strong> 的 <strong>高可用方案</strong>。</li>
-</ul>
-<h1 id="Redis哨兵的基本概念"><a href="#Redis哨兵的基本概念" class="headerlink" title="Redis哨兵的基本概念"></a>Redis哨兵的基本概念</h1><p><code>RedisSentinel</code> 是 <code>Redis</code> <strong>高可用</strong> 的实现方案。 <code>Sentinel</code> 是一个管理多个 <code>Redis</code> 实例的工具，它可以实现对 <code>Redis</code> 的 <strong>监控</strong>、<strong>通知</strong>、<strong>自动故障转移</strong>。下面先对 <code>RedisSentinel</code> 的 <strong>基本概念</strong> 进行简单的介绍。</p>
-<p>如图所示， <code>Redis</code> 的 <strong>主从复制模式</strong> 和 <code>Sentinel</code> <strong>高可用架构</strong> 的示意图：</p>
-<p><img src="/img/redis1.jpg" alt=""></p>
-<h1 id="Redis主从复制的问题"><a href="#Redis主从复制的问题" class="headerlink" title="Redis主从复制的问题"></a>Redis主从复制的问题</h1><p><code>Redis</code> <strong>主从复制</strong> 可将 <strong>主节点</strong> 数据同步给 <strong>从节点</strong>，从节点此时有两个作用：</p>
-<ol>
-<li>一旦 <strong>主节点宕机</strong>，<strong>从节点</strong> 作为 <strong>主节点</strong> 的 <strong>备份</strong> 可以随时顶上来。</li>
-<li>扩展 <strong>主节点</strong> 的 <strong>读能力</strong>，分担主节点读压力。</li>
-</ol>
-<p><strong>主从复制</strong> 同时存在以下几个问题：</p>
-<ul>
-<li>一旦 <strong>主节点宕机</strong>，<strong>从节点</strong> 晋升成 <strong>主节点</strong>，同时需要修改 <strong>应用方</strong> 的 <strong>主节点地址</strong>，还需要命令所有 <strong>从节点</strong> 去 <strong>复制</strong> 新的主节点，整个过程需要 <strong>人工干预</strong>。</li>
-<li><strong>主节点</strong> 的 <strong>写能力</strong> 受到 <strong>单机的限制</strong>。</li>
-<li><strong>主节点</strong> 的 <strong>存储能力</strong> 受到 <strong>单机的限制</strong>。</li>
-<li><strong>原生复制</strong> 的弊端在早期的版本中也会比较突出，比如： <code>Redis</code> <strong>复制中断</strong>后，<strong>从节点</strong> 会发起 <code>psync</code>。此时如果 <strong>同步不成功</strong>，则会进行 <strong>全量同步</strong>，<strong>主库</strong> 执行 <strong>全量备份</strong> 的同时，可能会造成毫秒或秒级的 <strong>卡顿</strong>。</li>
-</ul>
-<h1 id="Redis-Sentinel深入探究"><a href="#Redis-Sentinel深入探究" class="headerlink" title="Redis Sentinel深入探究"></a>Redis Sentinel深入探究</h1><h2 id="Redis-Sentinel的主要功能"><a href="#Redis-Sentinel的主要功能" class="headerlink" title="Redis Sentinel的主要功能"></a>Redis Sentinel的主要功能</h2><p><code>Sentinel</code> 的主要功能包括 <strong>主节点存活检测</strong>、<strong>主从运行情况检测</strong>、<strong>自动故障转移</strong>（ <code>failover</code>）、<strong>主从切换</strong>。 <code>Redis</code> 的 <code>Sentinel</code> 最小配置是 <strong>一主一从</strong>。</p>
-<p><code>Redis</code> 的 <code>Sentinel</code> 系统可以用来管理多个 <code>Redis</code> 服务器，该系统可以执行以下四个任务：</p>
-<ul>
-<li><strong>监控</strong></li>
-</ul>
-<p><code>Sentinel</code> 会不断的检查 <strong>主服务器</strong> 和 <strong>从服务器</strong> 是否正常运行。</p>
-<ul>
-<li><strong>通知</strong></li>
-</ul>
-<p>当被监控的某个 <code>Redis</code> 服务器出现问题， <code>Sentinel</code> 通过 <code>API</code> <strong>脚本</strong> 向 <strong>管理员</strong> 或者其他的 <strong>应用程序</strong> 发送通知。</p>
-<ul>
-<li><strong>自动故障转移</strong></li>
-</ul>
-<p>当 <strong>主节点</strong> 不能正常工作时， <code>Sentinel</code> 会开始一次 <strong>自动的</strong> 故障转移操作，它会将与 <strong>失效主节点</strong> 是 <strong>主从关系</strong> 的其中一个 <strong>从节点</strong> 升级为新的 <strong>主节点</strong>，并且将其他的 <strong>从节点</strong>指向 <strong>新的主节点</strong>。</p>
-<ul>
-<li><strong>配置提供者</strong></li>
-</ul>
-<p>在 <code>RedisSentinel</code> 模式下，<strong>客户端应用</strong> 在初始化时连接的是 <code>Sentinel</code> <strong>节点集合</strong>，从中获取 <strong>主节点</strong> 的信息。</p>
-<h2 id="主观下线和客观下线"><a href="#主观下线和客观下线" class="headerlink" title="主观下线和客观下线"></a>主观下线和客观下线</h2><p>默认情况下，<strong>每个</strong> <code>Sentinel</code> 节点会以 <strong>每秒一次</strong> 的频率对 <code>Redis</code> 节点和 <strong>其它</strong> 的 <code>Sentinel</code> 节点发送 <code>PING</code> 命令，并通过节点的 <strong>回复</strong> 来判断节点是否在线。</p>
-<ul>
-<li><strong>主观下线</strong></li>
-</ul>
-<p><strong>主观下线</strong> 适用于所有 <strong>主节点</strong> 和 <strong>从节点</strong>。如果在 <code>down-after-milliseconds</code>毫秒内， <code>Sentinel</code> 没有收到 <strong>目标节点</strong> 的有效回复，则会判定 <strong>该节点</strong> 为 <strong>主观下线</strong>。</p>
-<ul>
-<li><strong>客观下线</strong></li>
-</ul>
-<p><strong>客观下线</strong> 只适用于 <strong>主节点</strong>。如果 <strong>主节点</strong> 出现故障， <code>Sentinel</code> 节点会通过 <code>sentinelis-master-down-by-addr</code> 命令，向其它 <code>Sentinel</code> 节点询问对该节点的 <strong>状态判断</strong>。如果超过 <code>&lt;quorum&gt;</code> 个数的节点判定 <strong>主节点</strong> 不可达，则该 <code>Sentinel</code> 节点会判断 <strong>主节点</strong> 为 <strong>客观下线</strong>。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/redis简介/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/10/redis简介/" class="post-title-link" itemprop="url">redis简介</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 11:47:16" itemprop="dateModified" datetime="2019-03-02T11:47:16+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>Redis</code> 是一种基于 <strong>键值对</strong> 的 <code>NoSQL</code> 数据库。</p>
-<h1 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h1><ol>
-<li>速度快，最快可达到 <code>10wQPS</code>（基于 <strong>内存</strong>， <code>C</code> 语言，<strong>单线程</strong> 架构）；</li>
-<li>基于 <strong>键值对</strong> ( <code>key/value</code>) 的数据结构服务器。全称 <code>RemoteDictionaryServer</code>。包括 <code>string</code>(<strong>字符串</strong>)、 <code>hash</code>(<strong>哈希</strong>)、 <code>list</code>(<strong>列表</strong>)、 <code>set</code>(<strong>集合</strong>)、 <code>zset</code>(<strong>有序集合</strong>)、 <code>bitmap</code>(<strong>位图</strong>)。同时在 <strong>字符串</strong> 的基础上演变出 <strong>位图</strong>（ <code>BitMaps</code>）和 <code>HyperLogLog</code> 两种数据结构。 <code>3.2</code> 版本中加入 <code>GEO</code>（<strong>地理信息位置</strong>）。</li>
-<li>丰富的功能。例如：<strong>键过期</strong>（缓存），<strong>发布订阅</strong>（消息队列）， <code>Lua</code> 脚本（自己实现 <code>Redis</code> 命令），<strong>事务</strong>，<strong>流水线</strong>（ <code>Pipeline</code>，用于减少网络开销）。</li>
-<li>简单稳定。无外部库依赖，单线程模型。</li>
-<li>客户端语言多。</li>
-<li><strong>持久化</strong>（支持两种 <strong>持久化</strong> 方式 <code>RDB</code> 和 <code>AOF</code>）。</li>
-<li><strong>主从复制</strong>（分布式的基础）。</li>
-<li><strong>高可用</strong>（ <code>RedisSentinel</code>），<strong>分布式</strong>（ <code>RedisCluster</code>）和 <strong>水平扩容</strong>。</li>
-</ol>
-<h1 id="Redis的应用场景"><a href="#Redis的应用场景" class="headerlink" title="Redis的应用场景"></a>Redis的应用场景</h1><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>合理的使用 <strong>缓存</strong> 能够明显加快访问的速度，同时降低数据源的压力。这也是 <code>Redis</code> 最常用的功能。 <code>Redis</code> 提供了 <strong>键值过期时间</strong>（ <code>EXPIRE key seconds</code>）设置，并且也提供了灵活控制 <strong>最大内存</strong> 和 <strong>内存溢出</strong> 后的 <strong>淘汰策略</strong>。</p>
-<h2 id="排行榜"><a href="#排行榜" class="headerlink" title="排行榜"></a>排行榜</h2><p>每个网站都有自己的排行榜，例如按照 <strong>热度排名</strong> 的排行榜，<strong>发布时间</strong> 的排行榜，<strong>答题排行榜</strong> 等等。 <code>Redis</code> 提供了 <strong>列表</strong>（ <code>list</code>）和 <strong>有序集合</strong>（ <code>zset</code>）数据结构，合理的使用这些数据结构，可以很方便的构建各种排行榜系统。</p>
-<h2 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h2><p><strong>计数器</strong> 在网站应用中非常重要。例如：<strong>点赞数</strong>加 <code>1</code>，<strong>浏览数</strong> 加 <code>1</code>。还有常用的 <strong>限流操作</strong>，限制每个用户每秒 <strong>访问系统的次数</strong> 等等。 <code>Redis</code> 支持 <strong>计数功能</strong>（ <code>INCR key</code>），而且计数的 <strong>性能</strong> 也非常好，计数的同时也可以设置 <strong>超时时间</strong>，这样就可以 <strong>实现限流</strong>。</p>
-<h2 id="社交网络"><a href="#社交网络" class="headerlink" title="社交网络"></a>社交网络</h2><p>赞/踩，粉丝，共同好友/喜好，推送，下拉刷新等是社交网站必备的功能。由于社交网站 <strong>访问量通常比较大</strong>，而且 <strong>传统的数据库</strong> 不太适合保存这类数据， <code>Redis</code>提供的 <strong>数据结构</strong> 可以相对比较容易实现这些功能。</p>
-<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p><code>Redis</code> 提供的 <strong>发布订阅</strong>（ <code>PUB/SUB</code>）和 <strong>阻塞队列</strong> 的功能，虽然和专业的消息队列比，还 <strong>不够强大</strong>，但对于一般的消息队列功能基本满足。</p>
-<h1 id="Redis安装与配置"><a href="#Redis安装与配置" class="headerlink" title="Redis安装与配置"></a>Redis安装与配置</h1><p>这里就不展示redis的安装与配置了。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/25/Java实现二叉树/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/25/Java实现二叉树/" class="post-title-link" itemprop="url">java实现二叉树</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-01-25 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-25T17:01:21+08:00">2019-01-25</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:56:22" itemprop="dateModified" datetime="2019-03-02T15:56:22+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBiTree</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> Node root;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>&#123;</span><br><span class="line">        <span class="keyword">char</span> data;</span><br><span class="line">        Node left;</span><br><span class="line">        Node right;</span><br><span class="line">        Node(<span class="keyword">char</span> data)&#123;</span><br><span class="line">            <span class="keyword">this</span>.data = data;</span><br><span class="line">            left = <span class="keyword">null</span>;</span><br><span class="line">            right = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h1><h2 id="前中序列构建二叉树"><a href="#前中序列构建二叉树" class="headerlink" title="前中序列构建二叉树"></a>前中序列构建二叉树</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">// 根据 前 中 序列 构建二叉树</span><br><span class="line">    public Node build(String preOrder,String inOrder)&#123;</span><br><span class="line">        if(preOrder.isEmpty())</span><br><span class="line">            return null;</span><br><span class="line">        char rootValue = preOrder.charAt(0);</span><br><span class="line">        int rootIndex = inOrder.indexOf(rootValue);</span><br><span class="line"></span><br><span class="line">        Node root = new Node(rootValue);</span><br><span class="line">        root.left = build(</span><br><span class="line">                preOrder.substring(1,1+rootIndex),</span><br><span class="line">                inOrder.substring(0,rootIndex)</span><br><span class="line">        );</span><br><span class="line">        root.right = build(</span><br><span class="line">              preOrder.substring(1+rootIndex),</span><br><span class="line">              inOrder.substring(1+rootIndex)</span><br><span class="line">        );</span><br><span class="line"></span><br><span class="line">        return root;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="递归前序遍历"><a href="#递归前序遍历" class="headerlink" title="递归前序遍历"></a>递归前序遍历</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public void preOrder(Node root)&#123;</span><br><span class="line">        if(root != null)&#123;</span><br><span class="line">            System.out.print(root.data+&quot; &quot;);</span><br><span class="line">            preOrder(root.left);</span><br><span class="line">            preOrder(root.right);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="递归后续遍历"><a href="#递归后续遍历" class="headerlink" title="递归后续遍历"></a>递归后续遍历</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public void afterOrder(Node root)&#123;</span><br><span class="line">        if(root != null)&#123;</span><br><span class="line">            afterOrder(root.left);</span><br><span class="line">            afterOrder(root.right);</span><br><span class="line">            System.out.print(root.data+&quot; &quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/23/java实现循环队列/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/23/java实现循环队列/" class="post-title-link" itemprop="url">java实现循环队列</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-01-23 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-23T17:01:21+08:00">2019-01-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:56:29" itemprop="dateModified" datetime="2019-03-02T15:56:29+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>这里给出用数组实现的循环队列。采用牺牲一个单元格的方式判断队列满</p>
-<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyQueue</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] data;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> front;<span class="comment">//头 删</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> rear;<span class="comment">//尾 插</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> max;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyQueue</span><span class="params">(<span class="keyword">int</span> max)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.max = max;</span><br><span class="line">        data = <span class="keyword">new</span> <span class="keyword">int</span>[max];</span><br><span class="line">        front = <span class="number">0</span>;</span><br><span class="line">        rear = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h1><h2 id="入队"><a href="#入队" class="headerlink" title="入队"></a>入队</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 入队 从rear入队</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enQueue</span><span class="params">(<span class="keyword">int</span> value)</span></span>&#123;</span><br><span class="line">        <span class="comment">// 判断队列是否已满  采用牺牲单元格的做法</span></span><br><span class="line">        <span class="keyword">if</span>((rear+<span class="number">1</span>)%max == front)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"队列满"</span>);</span><br><span class="line">        data[rear] = value;</span><br><span class="line">        rear = (rear+<span class="number">1</span>)%max;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="出队"><a href="#出队" class="headerlink" title="出队"></a>出队</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 出队</span><br><span class="line">    public int deQueue()&#123;</span><br><span class="line">        // 队列为空 不能出队</span><br><span class="line">        if(front == rear)</span><br><span class="line">            throw new RuntimeException(&quot;队列空&quot;);</span><br><span class="line">        int value = data[front];</span><br><span class="line">        front = (front+1)%max;</span><br><span class="line">        return value;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/22/java实现栈/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/22/java实现栈/" class="post-title-link" itemprop="url">java实现栈</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-01-22 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-22T17:01:21+08:00">2019-01-22</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:56:35" itemprop="dateModified" datetime="2019-03-02T15:56:35+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>java实现栈、用数组实现。主要还是给出常规的操作</p>
-<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyStack</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> top;<span class="comment">//栈顶指针</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> max;<span class="comment">//栈的最大容量</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] data;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyStack</span><span class="params">(<span class="keyword">int</span> max)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.max = max;</span><br><span class="line">        data = <span class="keyword">new</span> <span class="keyword">int</span>[max];</span><br><span class="line">        top = -<span class="number">1</span>; <span class="comment">// 初始化为 -1</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h1><h2 id="入栈"><a href="#入栈" class="headerlink" title="入栈"></a>入栈</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 入栈</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">push</span><span class="params">(<span class="keyword">int</span> value)</span></span>&#123;</span><br><span class="line">        <span class="comment">// 栈不满 就可以入栈</span></span><br><span class="line">        <span class="keyword">if</span>(top == max-<span class="number">1</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"栈已满"</span>);</span><br><span class="line">        data[++top] = value;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-<h2 id="出栈"><a href="#出栈" class="headerlink" title="出栈"></a>出栈</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 出栈</span><br><span class="line">    public int pop()&#123;</span><br><span class="line">        if(top == -1)</span><br><span class="line">            throw new RuntimeException(&quot;栈为空&quot;);</span><br><span class="line">        return data[top--];</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -2305,7 +2437,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">19</span>
+                    <span class="site-state-item-count">26</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -2326,7 +2458,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">categories</span>
                   </a>
                 </div>
@@ -2347,7 +2481,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">4</span>
+                      
+                    
+                    <span class="site-state-item-count">5</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>

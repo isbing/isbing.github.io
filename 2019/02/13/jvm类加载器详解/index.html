@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="类加载器是什么类加载器简言之，就是用于把 .class文件中的字节码信息转化为具体 的java.lang.Class对象的过程的工具。 具体过程：  在实际类加载过程中， JVM会将所有的 .class字节码文件中的二进制数据读入内存中，导入运行时数据区的方法区中。 当一个类首次被主动加载或被动加载时，类加载器会对此类执行类加载的流程 – 加载、连接（验证、准备、解析）、初始化。 如果类加载成功">
+<meta name="keywords" content="jvm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm类加载器详解">
+<meta property="og:url" content="http://yoursite.com/2019/02/13/jvm类加载器详解/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="类加载器是什么类加载器简言之，就是用于把 .class文件中的字节码信息转化为具体 的java.lang.Class对象的过程的工具。 具体过程：  在实际类加载过程中， JVM会将所有的 .class字节码文件中的二进制数据读入内存中，导入运行时数据区的方法区中。 当一个类首次被主动加载或被动加载时，类加载器会对此类执行类加载的流程 – 加载、连接（验证、准备、解析）、初始化。 如果类加载成功">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/jvm5.jpg">
+<meta property="og:image" content="http://yoursite.com/img/jvm6.jpg">
+<meta property="og:updated_time" content="2019-03-03T08:55:03.995Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jvm类加载器详解">
+<meta name="twitter:description" content="类加载器是什么类加载器简言之，就是用于把 .class文件中的字节码信息转化为具体 的java.lang.Class对象的过程的工具。 具体过程：  在实际类加载过程中， JVM会将所有的 .class字节码文件中的二进制数据读入内存中，导入运行时数据区的方法区中。 当一个类首次被主动加载或被动加载时，类加载器会对此类执行类加载的流程 – 加载、连接（验证、准备、解析）、初始化。 如果类加载成功">
+<meta name="twitter:image" content="http://yoursite.com/img/jvm5.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/02/13/jvm类加载器详解/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>jvm类加载器详解 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/13/jvm类加载器详解/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">jvm类加载器详解
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-13 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-13T17:01:21+08:00">2019-02-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-03 16:55:03" itemprop="dateModified" datetime="2019-03-03T16:55:03+08:00">2019-03-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><img src="/img/jvm5.jpg" alt=""></p>
+<h1 id="类加载器是什么"><a href="#类加载器是什么" class="headerlink" title="类加载器是什么"></a>类加载器是什么</h1><p>类加载器简言之，就是用于把 <code>.class</code>文件中的<strong>字节码信息</strong>转化为具体 <code>的java.lang.Class</code><strong>对象</strong>的过程的工具。</p>
+<p>具体过程：</p>
+<ol>
+<li>在实际类加载过程中， <code>JVM</code>会将所有的 <code>.class</code>字节码文件中的<strong>二进制数据</strong>读入内存中，导入运行时数据区的<strong>方法区</strong>中。</li>
+<li>当一个类首次被<strong>主动加载</strong>或<strong>被动加载</strong>时，类加载器会对此类执行类加载的流程 – <strong>加载</strong>、<strong>连接</strong>（<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>）、<strong>初始化</strong>。</li>
+<li>如果类加载成功，<strong>堆内存</strong>中会产生一个新的 <code>Class</code>对象， <code>Class</code>对象封装了类在<strong>方法区</strong>内的<strong>数据结构</strong>。</li>
+</ol>
+<p><img src="/img/jvm6.jpg" alt=""></p>
+<h1 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h1><p>类加载的过程分为三个步骤(五个阶段) ：<strong>加载</strong> -&gt; <strong>连接</strong>（<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>）-&gt; <strong>初始化</strong>。</p>
+<p><strong>加载</strong>、<strong>验证</strong>、<strong>准备</strong>和<strong>初始化</strong>这四个阶段发生的顺序是<strong>确定的</strong>，而<strong>解析阶段</strong>可以在初始化阶段之后发生，也称为<strong>动态绑定</strong>或<strong>晚期绑定</strong>。</p>
+<h2 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h2><p>加载：查找并加载类的<strong>二进制数据</strong>的过程。</p>
+<p>加载的过程描述：</p>
+<ol>
+<li>通过类的<strong>全限定名</strong>定位 <code>.class</code>文件，并获取其<strong>二进制字节流</strong>。</li>
+<li>把字节流所代表的<strong>静态存储结构</strong>转换为<strong>方法区</strong>的<strong>运行时数据结构</strong>。</li>
+<li>在 <code>Java</code><strong>堆</strong>中生成一个此类的 <code>java.lang.Class</code>对象，作为方法区中这些数据的<strong>访问入口</strong>。</li>
+</ol>
+<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><p>连接：包括<strong>验证</strong>、<strong>准备</strong>、<strong>解析</strong>三步。</p>
+<h3 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h3><p>验证：确保被加载的类的<strong>正确性</strong>。验证是连接阶段的第一步，用于确保 <code>Class</code>字节流中的信息是否符合虚拟机的要求。</p>
+<h3 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h3><p>准备：为类的<strong>静态变量</strong>分配内存，并将其初始化为<strong>默认值</strong>。准备过程通常分配一个结构用来存储类信息，这个结构中包含了类中定义的<strong>成员变量</strong>，<strong>方法</strong>和<strong>接口信息</strong>等。</p>
+<p>具体行为：</p>
+<ul>
+<li>这时候进行内存分配的仅包括<strong>类变量</strong>( <code>static</code>)，而不包括<strong>实例变量</strong>，<strong>实例变量</strong>会在对象<strong>实例化</strong>时随着对象一块分配在 <code>Java</code><strong>堆</strong>中。</li>
+<li>这里所设置的<strong>初始值</strong>通常情况下是数据类型<strong>默认的零值</strong>（如 <code>0</code>、 <code>0L</code>、 <code>null</code>、 <code>false</code>等），而不是被在 <code>Java</code>代码中被<strong>显式赋值</strong>。</li>
+</ul>
+<h3 id="解析"><a href="#解析" class="headerlink" title="解析"></a>解析</h3><p>解析：把类中对<strong>常量池</strong>内的<strong>符号引用</strong>转换为<strong>直接引用</strong>。</p>
+<p>解析动作主要针对<strong>类或接口</strong>、<strong>字段</strong>、<strong>类方法</strong>、<strong>接口方法</strong>、<strong>方法类型</strong>、<strong>方法句柄</strong>和<strong>调用点限定符</strong>等7类符号引用进行。</p>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>初始化：对<strong>类静态变量</strong>赋予正确的初始值 (注意和连接时的<strong>解析过程</strong>区分开)。</p>
+<h3 id="初始化的目标"><a href="#初始化的目标" class="headerlink" title="初始化的目标"></a>初始化的目标</h3><ul>
+<li>实现对声明<strong>类静态变量</strong>时指定的初始值的初始化；</li>
+<li>实现对使用<strong>静态代码块</strong>设置的初始值的初始化。</li>
+</ul>
+<h3 id="初始化的步骤"><a href="#初始化的步骤" class="headerlink" title="初始化的步骤"></a>初始化的步骤</h3><ol>
+<li>如果此类没被<strong>加载</strong>、<strong>连接</strong>，则先<strong>加载</strong>、<strong>连接</strong>此类；</li>
+<li>如果此类的<strong>直接父类</strong>还未被初始化，则先<strong>初始化</strong>其直接父类；</li>
+<li>如果类中有<strong>初始化语句</strong>，则按照顺序依次执行初始化语句。</li>
+</ol>
+<h3 id="初始化的时机"><a href="#初始化的时机" class="headerlink" title="初始化的时机"></a>初始化的时机</h3><ul>
+<li>创建类的实例( <code>new</code>关键字)；</li>
+<li><code>java.lang.reflect</code>包中的方法(如： <code>Class.forName(“xxx”)</code>)；</li>
+<li>对类的<strong>静态变量</strong>进行访问或赋值；</li>
+<li>访问调用类的<strong>静态方法</strong>；</li>
+<li>初始化一个类的<strong>子类</strong>，<strong>父类</strong>本身也会被初始化；</li>
+<li>作为程序的<strong>启动入口</strong>，包含 <code>main</code>方法(如： <code>SpringBoot</code>入口类)。</li>
+</ul>
+<h1 id="类的主动引用和被动引用"><a href="#类的主动引用和被动引用" class="headerlink" title="类的主动引用和被动引用"></a>类的主动引用和被动引用</h1><h2 id="主动引用"><a href="#主动引用" class="headerlink" title="主动引用"></a>主动引用</h2><p>主动引用：在类加载阶段，只执行<strong>加载</strong>、<strong>连接</strong>操作，不执行<strong>初始化</strong>操作。</p>
+<h3 id="主动引用的几种形式"><a href="#主动引用的几种形式" class="headerlink" title="主动引用的几种形式"></a>主动引用的几种形式</h3><ul>
+<li>创建类的实例( <code>new</code>关键字)；</li>
+<li><code>java.lang.reflect</code>包中的方法(如： <code>Class.forName(“xxx”)</code>)；</li>
+<li>对类的<strong>静态变量</strong>进行访问或赋值；</li>
+<li>访问调用类的<strong>静态方法</strong>；</li>
+<li>初始化一个类的<strong>子类</strong>，<strong>父类</strong>本身也会被初始化；</li>
+<li>作为程序的<strong>启动入口</strong>，包含 <code>main</code>方法(如： <code>SpringBoot</code>入口类)。</li>
+</ul>
+<h2 id="被动引用"><a href="#被动引用" class="headerlink" title="被动引用"></a>被动引用</h2><p>被动引用： 在类加载阶段，会执行<strong>加载</strong>、<strong>连接</strong>和<strong>初始化</strong>操作。</p>
+<p>被动引用的几种形式：</p>
+<ol>
+<li>通过子类引用<strong>父类</strong>的的<strong>静态字段</strong>，不会导致<strong>子类</strong>初始化；</li>
+<li>定义类的<strong>数组引用</strong>而<strong>不赋值</strong>，不会触发此类的初始化；</li>
+<li>访问类定义的<strong>常量</strong>，不会触发此类的初始化。</li>
+</ol>
+<h1 id="三种类加载器"><a href="#三种类加载器" class="headerlink" title="三种类加载器"></a>三种类加载器</h1><p>类加载器：<strong>类加载器</strong>负责加载程序中的<strong>类型</strong>（类和接口），并赋予唯一的名字予以标识。</p>
+<ul>
+<li><code>BootstrapClassloader</code> 是在 <code>Java</code>虚拟机启动后初始化的。</li>
+<li><code>BootstrapClassloader</code> 负责加载 <code>ExtClassLoader</code>，并且将 <code>ExtClassLoader</code>的父加载器设置为 <code>BootstrapClassloader。</code></li>
+<li><code>BootstrapClassloader</code> 加载完 <code>ExtClassLoader</code> 后，就会加载 <code>AppClassLoader</code>，并且将 <code>AppClassLoader</code> 的父加载器指定为 <code>ExtClassLoader</code>。</li>
+</ul>
+<h1 id="双亲委托机制"><a href="#双亲委托机制" class="headerlink" title="双亲委托机制"></a>双亲委托机制</h1><p>核心思想：其一，<strong>自底向上</strong>检查类是否<strong>已加载</strong>；其二，<strong>自顶向下</strong>尝试<strong>加载类</strong>。</p>
+<p>具体加载过程</p>
+<ol>
+<li>当 <code>AppClassLoader</code>加载一个 <code>class</code>时，它首先不会自己去尝试加载这个类，而是把类加载请求<strong>委派</strong>给<strong>父类加载器</strong> <code>ExtClassLoader</code>去完成。</li>
+<li>当 <code>ExtClassLoader</code>加载一个 <code>class</code>时，它首先也不会自己去尝试加载这个类，而是把类加载请求<strong>委派</strong>给 <code>BootStrapClassLoader</code>去完成。</li>
+<li>如果 <code>BootStrapClassLoader</code>加载失败（例如在 <code>%JAVA_HOME%/jre/lib</code>里未查找到该 <code>class</code>），会使用 <code>ExtClassLoader</code>来尝试加载；</li>
+<li>如果 <code>ExtClassLoader</code>也加载失败，则会使用 <code>AppClassLoader</code>来加载，如果 <code>AppClassLoader</code>也加载失败，则会报出异常 <code>ClassNotFoundException</code>。</li>
+</ol>
+<blockquote>
+<p><code>ClassLoader</code>通过 <code>loadClass()</code>方法实现了<strong>双亲委托机制</strong>，用于类的<strong>动态加载</strong>。</p>
+</blockquote>
+<h1 id="类的动态加载"><a href="#类的动态加载" class="headerlink" title="类的动态加载"></a>类的动态加载</h1><h2 id="类的几种加载方式"><a href="#类的几种加载方式" class="headerlink" title="类的几种加载方式"></a>类的几种加载方式</h2><ul>
+<li>通过<strong>命令行</strong>启动时由 <code>JVM</code>初始化加载；</li>
+<li>通过 <code>Class.forName()</code>方法动态加载；</li>
+<li>通过 <code>ClassLoader.loadClass()</code>方法动态加载。</li>
+</ul>
+<h2 id="Class-forName-和ClassLoader-loadClass"><a href="#Class-forName-和ClassLoader-loadClass" class="headerlink" title="Class.forName()和ClassLoader.loadClass()"></a>Class.forName()和ClassLoader.loadClass()</h2><ul>
+<li><strong>Class.forName()</strong>：把类的 <code>.class</code>文件加载到 <code>JVM</code>中，对类进行解释的同时执行类中的 <code>static</code><strong>静态代码块</strong>；</li>
+<li><strong>ClassLoader.loadClass()</strong>：只是把.class文件加载到 <code>JVM</code>中，不会执行 <code>static</code><strong>代码块</strong>中的内容，只有在 <code>newInstance</code>才会去执行。</li>
+</ul>
+<h1 id="对象的初始化"><a href="#对象的初始化" class="headerlink" title="对象的初始化"></a>对象的初始化</h1><p>静态变量/静态代码块 -&gt; 普通代码块 -&gt; 构造函数</p>
+<ol>
+<li>父类<strong>静态变量</strong>和<strong>静态代码块</strong>（先声明的先执行）；</li>
+<li>子类<strong>静态变量</strong>和<strong>静态代码块</strong>（先声明的先执行）；</li>
+<li>父类<strong>普通成员变量</strong>和<strong>普通代码块</strong>（先声明的先执行）；</li>
+<li>父类的<strong>构造函数</strong>；</li>
+<li>子类<strong>普通成员变量</strong>和<strong>普通代码块</strong>（先声明的先执行）；</li>
+<li>子类的<strong>构造函数</strong>。</li>
+</ol>
+<h1 id="自定义类加载器"><a href="#自定义类加载器" class="headerlink" title="自定义类加载器"></a>自定义类加载器</h1><blockquote>
+<p><strong>Step 1</strong>：定义待加载的目标类 <code>Parent.java</code>和 <code>Children.java</code>。</p>
+</blockquote>
+<blockquote>
+<p><strong>Step 2</strong>：实现自定义类加载器 <code>CustomClassLoader</code> extends ClassLoader </p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jvm/" rel="tag"># jvm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/12/Redis集群模式/" rel="next" title="redis集群模式">
+                <i class="fa fa-chevron-left"></i> redis集群模式
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/14/java实现顺序表/" rel="prev" title="java实现顺序表">
+                java实现顺序表 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#类加载器是什么"><span class="nav-number">1.</span> <span class="nav-text">类加载器是什么</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类加载的过程"><span class="nav-number">2.</span> <span class="nav-text">类加载的过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#加载"><span class="nav-number">2.1.</span> <span class="nav-text">加载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#连接"><span class="nav-number">2.2.</span> <span class="nav-text">连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#验证"><span class="nav-number">2.2.1.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备"><span class="nav-number">2.2.2.</span> <span class="nav-text">准备</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解析"><span class="nav-number">2.2.3.</span> <span class="nav-text">解析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">2.3.</span> <span class="nav-text">初始化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化的目标"><span class="nav-number">2.3.1.</span> <span class="nav-text">初始化的目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化的步骤"><span class="nav-number">2.3.2.</span> <span class="nav-text">初始化的步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化的时机"><span class="nav-number">2.3.3.</span> <span class="nav-text">初始化的时机</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类的主动引用和被动引用"><span class="nav-number">3.</span> <span class="nav-text">类的主动引用和被动引用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#主动引用"><span class="nav-number">3.1.</span> <span class="nav-text">主动引用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#主动引用的几种形式"><span class="nav-number">3.1.1.</span> <span class="nav-text">主动引用的几种形式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#被动引用"><span class="nav-number">3.2.</span> <span class="nav-text">被动引用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三种类加载器"><span class="nav-number">4.</span> <span class="nav-text">三种类加载器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#双亲委托机制"><span class="nav-number">5.</span> <span class="nav-text">双亲委托机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类的动态加载"><span class="nav-number">6.</span> <span class="nav-text">类的动态加载</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#类的几种加载方式"><span class="nav-number">6.1.</span> <span class="nav-text">类的几种加载方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Class-forName-和ClassLoader-loadClass"><span class="nav-number">6.2.</span> <span class="nav-text">Class.forName()和ClassLoader.loadClass()</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#对象的初始化"><span class="nav-number">7.</span> <span class="nav-text">对象的初始化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义类加载器"><span class="nav-number">8.</span> <span class="nav-text">自定义类加载器</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

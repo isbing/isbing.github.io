@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="JVM屏蔽了与具体操作系统平台相关的信息，使 Java程序只需生成在 Java虚拟机上一次编译，多次运行，具有跨平台性。 JVM在执行字节码时，实际上最终还是把字节码解释成具体平台上的机器指令执行。 类加载器（Class Loader）类加载器 负责加载程序中的类型（类和接口），并赋予唯一的名字予以标识。  类加载器的关系  BootstrapClassloader 是在 Java虚拟机启动后初始">
+<meta name="keywords" content="jvm">
+<meta property="og:type" content="article">
+<meta property="og:title" content="jvm总体概述">
+<meta property="og:url" content="http://yoursite.com/2019/02/07/JVM总体概述/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="JVM屏蔽了与具体操作系统平台相关的信息，使 Java程序只需生成在 Java虚拟机上一次编译，多次运行，具有跨平台性。 JVM在执行字节码时，实际上最终还是把字节码解释成具体平台上的机器指令执行。 类加载器（Class Loader）类加载器 负责加载程序中的类型（类和接口），并赋予唯一的名字予以标识。  类加载器的关系  BootstrapClassloader 是在 Java虚拟机启动后初始">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/jvm1.jpg">
+<meta property="og:updated_time" content="2019-03-02T14:30:10.339Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="jvm总体概述">
+<meta name="twitter:description" content="JVM屏蔽了与具体操作系统平台相关的信息，使 Java程序只需生成在 Java虚拟机上一次编译，多次运行，具有跨平台性。 JVM在执行字节码时，实际上最终还是把字节码解释成具体平台上的机器指令执行。 类加载器（Class Loader）类加载器 负责加载程序中的类型（类和接口），并赋予唯一的名字予以标识。  类加载器的关系  BootstrapClassloader 是在 Java虚拟机启动后初始">
+<meta name="twitter:image" content="http://yoursite.com/img/jvm1.jpg">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/02/07/JVM总体概述/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>jvm总体概述 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/07/JVM总体概述/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">jvm总体概述
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-07 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-07T17:01:21+08:00">2019-02-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 22:30:10" itemprop="dateModified" datetime="2019-03-02T22:30:10+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>JVM屏蔽了与具体操作系统平台相关的信息</strong>，使 <code>Java</code>程序只需生成在 <code>Java</code>虚拟机上<strong>一次编译，多次运行，具有跨平台性</strong>。 <code>JVM</code>在执行字节码时，实际上最终还是把<strong>字节码</strong>解释成具体平台上的<strong>机器指令</strong>执行。</p>
+<h1 id="类加载器（Class-Loader）"><a href="#类加载器（Class-Loader）" class="headerlink" title="类加载器（Class Loader）"></a>类加载器（Class Loader）</h1><p><strong>类加载器</strong> 负责加载程序中的类型（类和接口），并赋予唯一的名字予以标识。</p>
+<p><img src="/img/jvm1.jpg" alt=""></p>
+<p>类加载器的关系</p>
+<ol>
+<li><code>BootstrapClassloader</code> 是在 <code>Java</code>虚拟机启动后初始化的。</li>
+<li><code>BootstrapClassloader</code> 负责加载 <code>ExtClassLoader</code>，并且将 <code>ExtClassLoader</code>的父加载器设置为 <code>BootstrapClassloader</code></li>
+<li><code>BootstrapClassloader</code> 加载完 <code>ExtClassLoader</code> 后，就会加载 <code>AppClassLoader</code>，并且将 <code>AppClassLoader</code> 的父加载器指定为 <code>ExtClassLoader</code>。</li>
+</ol>
+<h1 id="双亲委托机制"><a href="#双亲委托机制" class="headerlink" title="双亲委托机制"></a>双亲委托机制</h1><p><code>Java</code>中 <code>ClassLoader</code>的加载采用了<strong>双亲委托机制</strong>，采用<strong>双亲委托机制</strong>加载类的时候采用如下的几个步骤：</p>
+<ol>
+<li>当前 <code>ClassLoader</code>首先从自己已经加载的类中查询是否此类已经加载，如果已经加载则直接返回原来已经加载的类。</li>
+<li>当前 <code>ClassLoader</code>的缓存中没有找到被加载的类的时候，委托父类加载器去加载，父类加载器采用同样的策略，首先查看自己的缓存，然后委托父类的父类去加载，一直到 <code>BootstrapClassLoader</code>。</li>
+<li>当所有的父类加载器都没有加载的时候，再由当前的类加载器加载，并将其放入它自己的缓存中，以便下次有加载请求的时候直接返回。</li>
+</ol>
+<blockquote>
+<p><strong>小结</strong> ：双亲委托机制的核心思想分为两个步骤。其一，自底向上检查类是否已经加载；其二，自顶向下尝试加载类。</p>
+</blockquote>
+<h1 id="类装载器特点"><a href="#类装载器特点" class="headerlink" title="类装载器特点"></a>类装载器特点</h1><p><code>Java</code>提供了<strong>动态加载</strong>特性。在运行时的第一次引用到一个 <code>class</code>的时候会对它进行<strong>装载(Loading)</strong> 、 <strong>连接(Linking) 和 初始化(Initialization) *</strong>，而不是在编译时进行。不同的JVM的实现不同，本文所描述的内容均只限于 <code>HotspotJVM</code>。</p>
+<p><code>JVM</code>的类装载器负责动态装载， <code>Java</code>的类装载器有如下几个特点：</p>
+<ul>
+<li><strong>层级结构</strong>：Java里的类装载器被组织成了有父子关系的层级结构。Bootstrap类装载器是所有装载器的父亲。</li>
+<li><strong>代理模式</strong>： 基于层级结构，类的代理可以在装载器之间进行代理。当装载器装载一个类时，首先会检查它在父装载器中是否进行了装载。如果上层装载器已经装载了这个类，这个类会被直接使用。反之，类装载器会请求装载这个类</li>
+<li><strong>可见性限制</strong>：一个子装载器可以查找父装载器中的类，但是一个父装载器不能查找子装载器里的类。</li>
+<li><strong>不允许卸载</strong>：类装载器可以装载一个类但是不可以卸载它，不过可以删除当前的类装载器，然后创建一个新的类装载器装载。</li>
+</ul>
+<h1 id="类装载器过程"><a href="#类装载器过程" class="headerlink" title="类装载器过程"></a>类装载器过程</h1><p><strong>1）加载（Loading）</strong></p>
+<p>首先，根据<strong>类的全限定名</strong>找到代表这个类的 <code>Class</code>文件，然后读取到一个<strong>字节数组</strong>中。接着，这些字节会被解析检验它们是否代表一个 <code>Class</code><strong>对象</strong>并包含正确的 <code>major</code>、 <code>minor</code>版本信息。<strong>直接父类</strong> 的类和接口也会被加载进来。这些操作一旦完成，<strong>类或者接口对象</strong> 就从二进制表示中创建出来了。</p>
+<p><strong>2）连接（Linking）</strong></p>
+<p>链接是检验类或接口并准备类型和父类接口的过程。链接过程包含三步：<strong>校验（Verifying）</strong>、<strong>准备（Preparing）</strong>、<strong>部分解析（Optionally resolving）</strong>。</p>
+<ul>
+<li><strong>验证</strong></li>
+</ul>
+<p>这是类装载中最复杂的过程，并且花费的时间也是最长的。任务是确保导入类型的<strong>准确性</strong>，验证阶段做的检查，运行时不需要再做。虽然减慢加了载速度，但是避免了多次检查。</p>
+<ul>
+<li><strong>准备</strong></li>
+</ul>
+<p>准备过程通常分配一个结构用来<strong>存储类信息</strong>，这个结构中包含了类中定义的<strong>成员变量</strong>，<strong>方法</strong> 和<strong>接口信息</strong>等。</p>
+<ul>
+<li><strong>解析</strong></li>
+</ul>
+<p>解析是可选阶段，把这个类的<strong>常量池</strong>中的所有的<strong>符号引用</strong>改变成<strong>直接引用</strong>。如果不执行，符号解析要等到字节码指令使用这个引用时才会进行。</p>
+<p><strong>3）初始化（Initialization）</strong></p>
+<p>把类中的变量初始化成合适的值。执行<strong>静态初始化程序</strong>，把<strong>静态变量</strong>初始化成指定的值。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jvm/" rel="tag"># jvm</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/02/05/jvm常见垃圾回收器/" rel="next" title="jvm常见垃圾回收器">
+                <i class="fa fa-chevron-left"></i> jvm常见垃圾回收器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/02/09/jvm内存区域/" rel="prev" title="jvm内存区域">
+                jvm内存区域 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#类加载器（Class-Loader）"><span class="nav-number">1.</span> <span class="nav-text">类加载器（Class Loader）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#双亲委托机制"><span class="nav-number">2.</span> <span class="nav-text">双亲委托机制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类装载器特点"><span class="nav-number">3.</span> <span class="nav-text">类装载器特点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#类装载器过程"><span class="nav-number">4.</span> <span class="nav-text">类装载器过程</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
