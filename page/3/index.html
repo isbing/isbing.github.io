@@ -322,6 +322,202 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/04/熔断器Hystrix/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/04/熔断器Hystrix/" class="post-title-link" itemprop="url">熔断器Hystrix</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-01-04 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-04T17:01:21+08:00">2019-01-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 11:15:36" itemprop="dateModified" datetime="2019-03-02T11:15:36+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/springcloud/" itemprop="url" rel="index"><span itemprop="name">springcloud</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在微服务框架 <code>SpringCloud</code> 中，可以用 <code>RestTemplate</code> 配合 <code>Ribbon</code> 或 <code>Feign</code>实现 <strong>服务与服务</strong> 之间的 <strong>相互调用</strong>。</p>
+<p>为了保证服务的 <strong>高可用</strong>，<strong>单个服务</strong> 通常会采用 <strong>集群部署</strong>。由于 <strong>网络原因</strong>，服务并不能保证 <code>100%</code> 的 <strong>可用性</strong>，如果 <strong>单个服务</strong> 出现问题，调用这个服务就会出现 <strong>线程阻塞</strong>，此时若有 <strong>大量的请求</strong>涌入， <code>Servlet</code> 容器的 <strong>线程资源</strong> 会被耗尽，导致 <strong>服务瘫痪</strong>。</p>
+<p>服务与服务之间具有 <strong>依赖性</strong>，故障会传播，导致整个微服务系统发生 <strong>雪崩</strong>。</p>
+<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p><code>Netflix</code> 开源了 <code>Hystrix</code> 组件，实现了 <strong>熔断器模式</strong>， <code>SpringCloud</code> 对这个组件进行了整合。在微服务架构中，一个请求需要调用 <strong>多个服务</strong> 是非常常见的，如下图所示：</p>
+<p><img src="/img/hystrix1.jpg" alt=""></p>
+<p><strong>下层</strong> 的服务如果出现故障，会导致 <strong>故障级联效应</strong>。当对特定的服务的调用的 <strong>失败次数</strong> 达到一个 <strong>阀值</strong>（ <code>Hystrix</code> 是 <code>5</code> 秒 <code>20</code> 次），<strong>断路器</strong> 将会被打开。</p>
+<p><img src="/img/hystrix2.jpg" alt=""></p>
+<p><strong>断路器</strong> 打开后 <strong>底层服务</strong> 将会隔断，可用避免 <strong>故障级联</strong> 问题，<strong>上层服务</strong> 调用 <code>fallback</code> 方法直接返回一个 <strong>固定值</strong>。</p>
+<h2 id="在Ribbon上使用熔断器"><a href="#在Ribbon上使用熔断器" class="headerlink" title="在Ribbon上使用熔断器"></a>在Ribbon上使用熔断器</h2><p>在 <code>pom.xml</code> 文件中引入 <code>hystrix</code> 的 <strong>起步依赖</strong> <code>spring-cloud-starter-hystrix</code>：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">	&lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;spring-cloud-starter-hystrix&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>在应用的启动类上使用 <code>@EnableHystrix</code> 开启 <code>hystrix</code> 的功能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@EnableHystrix</span><br><span class="line">@EnableDiscoveryClient</span><br><span class="line">@SpringBootApplication</span><br><span class="line">public class ServiceRibbonApplication &#123;</span><br><span class="line">  </span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		SpringApplication.run(ServiceRibbonApplication.class, args);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	@Bean   </span><br><span class="line">	@LoadBalanced   </span><br><span class="line">	public RestTemplate restTemplate () &#123;   </span><br><span class="line">		return new RestTemplate ();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用注解 <code>@HystrixCommand</code> 标记调用失败时需要熔断的方法， <code>fallbackMethod</code>属性指定 <strong>降级方法</strong> 的 <strong>方法名</strong> 为 <code>fallback</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class HelloService &#123;</span><br><span class="line">  </span><br><span class="line">	@Autowired</span><br><span class="line">	private RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	@HystrixCommand(fallbackMethod = &quot;fallback&quot;)</span><br><span class="line">    public String requestForHiService(String name)&#123;   </span><br><span class="line">		return restTemplate.getForObject(&quot;http://SERVICE-HI/hi?name=&quot; + name, String.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	public String fallback(String name)&#123;   </span><br><span class="line">		return &quot;Fallback method invoked, name is &quot; + name;</span><br><span class="line">    </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="在Feign上使用熔断器"><a href="#在Feign上使用熔断器" class="headerlink" title="在Feign上使用熔断器"></a>在Feign上使用熔断器</h2><p><code>Feign</code> 是自带 <strong>断路器</strong> 的，不过需要在 <strong>配置文件</strong> 中开启 <code>hystrix</code> 的配置。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">feign:</span><br><span class="line">  hystrix:</span><br><span class="line">    enabled: true</span><br></pre></td></tr></table></figure>
+<p><code>Hystrix</code> 支持 <strong>降级回退</strong> 操作，当 <strong>发生熔断</strong> 或 <strong>出现错误</strong> 时，调用会执行 <strong>默认代码路径</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(value = &quot;service-hi&quot;, fallback = HelloServiceFallback.class)</span><br><span class="line">public interface HelloService &#123;</span><br><span class="line">	@RequestMapping(value = &quot;/hi&quot;, method = RequestMethod.GET)</span><br><span class="line">	String sayHi(@RequestParam(value = &quot;name&quot;) String name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过设置 <code>fallback</code> 属性为实现 <strong>降级回退</strong> 的 <strong>类</strong>，来启用 <code>@FeignClient</code> 的 <strong>失败降级</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class HelloServiceFallback implements HelloService &#123;</span><br><span class="line">   </span><br><span class="line">	@Override</span><br><span class="line">	public String sayHi (String name) &#123;   </span><br><span class="line">		return &quot;Fallback method invoked, name is &quot; + name;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果需要获取导致 <strong>回退触发</strong> 的原因，可以指定 <code>@FeignClient</code> 注解内部的 <code>fallbackFactory</code> 属性， <code>fallbackFactory</code> 属性和 <code>fallback</code> 属性不能一起使用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(value = &quot;service-hi&quot;, fallbackFactory = HelloServiceFallbackFactory.class)</span><br><span class="line">public interface HelloService &#123;</span><br><span class="line">	@RequestMapping(value = &quot;/hi&quot;,method = RequestMethod.GET) </span><br><span class="line">	String sayHi(@RequestParam(value = &quot;name&quot;) String name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后提供一个 <code>FallbackFactory</code> 的 <strong>实现类</strong>，实现类指定 <strong>泛型参数</strong> 为 <code>HelloService</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class HelloServiceFallbackFactory implements FallbackFactory&lt;HelloService&gt; &#123;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">    public HelloService create(Throwable throwable) &#123;   </span><br><span class="line">		return new HelloService() &#123;    </span><br><span class="line">			@Override</span><br><span class="line">			public String sayHi(String name) &#123;</span><br><span class="line">				return &quot;Fallback method invoked, name is &quot;</span><br><span class="line">                         + name +&quot;, message is &quot;+ throwable.getMessage();</span><br><span class="line">            </span><br><span class="line">			&#125;</span><br><span class="line">        </span><br><span class="line">		&#125;;</span><br><span class="line">    </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/03/feign/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1569,7 +1765,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-count">27</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -1592,7 +1788,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">categories</span>
                   </a>
                 </div>
@@ -1615,7 +1813,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>

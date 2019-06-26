@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="需求当前有一堆pdf（word）文档。但是里面会有一些位置需要通过程序动态的将数据写入。 可以理解为 用户查看某一个pdf模板，然后填写自己的信息。提交之后，将这些信息动态的写入刚才那个模板之中，生成属于自己的一份PDF文件。 准备这里采用的是 itext来实现 制作pdf模板（假设从word文件开始）    使用adobe acrobat dc 这个软件。对于当前word文件 另存为 adobe">
+<meta name="keywords" content="pdf模板">
+<meta property="og:type" content="article">
+<meta property="og:title" content="根据pdf模板生成新的PDF文件">
+<meta property="og:url" content="http://yoursite.com/2019/06/25/根据pdf模板生成新的pdf文件/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="需求当前有一堆pdf（word）文档。但是里面会有一些位置需要通过程序动态的将数据写入。 可以理解为 用户查看某一个pdf模板，然后填写自己的信息。提交之后，将这些信息动态的写入刚才那个模板之中，生成属于自己的一份PDF文件。 准备这里采用的是 itext来实现 制作pdf模板（假设从word文件开始）    使用adobe acrobat dc 这个软件。对于当前word文件 另存为 adobe">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/img/pdf1.png">
+<meta property="og:image" content="http://yoursite.com/img/pdf2.png">
+<meta property="og:image" content="http://yoursite.com/img/pdf3.png">
+<meta property="og:image" content="http://yoursite.com/img/pdf4.png">
+<meta property="og:updated_time" content="2019-06-25T12:43:32.440Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="根据pdf模板生成新的PDF文件">
+<meta name="twitter:description" content="需求当前有一堆pdf（word）文档。但是里面会有一些位置需要通过程序动态的将数据写入。 可以理解为 用户查看某一个pdf模板，然后填写自己的信息。提交之后，将这些信息动态的写入刚才那个模板之中，生成属于自己的一份PDF文件。 准备这里采用的是 itext来实现 制作pdf模板（假设从word文件开始）    使用adobe acrobat dc 这个软件。对于当前word文件 另存为 adobe">
+<meta name="twitter:image" content="http://yoursite.com/img/pdf1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/25/根据pdf模板生成新的pdf文件/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>根据pdf模板生成新的PDF文件 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/25/根据pdf模板生成新的pdf文件/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">根据pdf模板生成新的PDF文件
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-06-25 20:43:21 / Modified: 20:43:32" itemprop="dateCreated datePublished" datetime="2019-06-25T20:43:21+08:00">2019-06-25</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>当前有一堆pdf（word）文档。但是里面会有一些位置需要通过程序动态的将数据写入。</p>
+<p>可以理解为 用户查看某一个pdf模板，然后填写自己的信息。提交之后，将这些信息动态的写入刚才那个模板之中，生成属于自己的一份PDF文件。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="这里采用的是-itext来实现"><a href="#这里采用的是-itext来实现" class="headerlink" title="这里采用的是 itext来实现"></a>这里采用的是 itext来实现</h3><ol>
+<li>制作pdf模板（假设从word文件开始）</li>
+</ol>
+<p><img src="/img/pdf1.png" alt=""></p>
+<ol start="2">
+<li>使用adobe acrobat dc 这个软件。对于当前word文件 另存为 adobe pdf。这样就成了 pdf文件</li>
+</ol>
+<p><img src="/img/pdf2.png" alt=""></p>
+<ol start="3">
+<li>定制程序中需要使用到的 占位符。点击 准备表单。</li>
+</ol>
+<p><img src="/img/pdf3.png" alt=""></p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>取当前模板，生成一份新的PDF文件，里面会涉及到 将占位符填充，增加水印，设置密码。</p>
+<h3 id="核心处理方法"><a href="#核心处理方法" class="headerlink" title="核心处理方法"></a>核心处理方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doCommon</span><span class="params">(String from, OutputStream out, Map&lt;String, Object&gt; data)</span> </span>&#123;</span><br><span class="line">   PdfReader reader;</span><br><span class="line">   ByteArrayOutputStream bos;</span><br><span class="line">   PdfStamper stamper;</span><br><span class="line">   Document doc = <span class="keyword">null</span>;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      reader = <span class="keyword">new</span> PdfReader(from);<span class="comment">//读取pdf模板</span></span><br><span class="line">      bos = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">      stamper = <span class="keyword">new</span> PdfStamper(reader, bos);</span><br><span class="line">      AcroFields form = stamper.getAcroFields();</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 遍历data 给pdf表单表格赋值</span></span><br><span class="line">      <span class="keyword">for</span> (String key : data.keySet()) &#123;</span><br><span class="line">         <span class="keyword">if</span> (data.get(key) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            form.setField(key, data.get(key).toString());</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 增加图片水印</span></span><br><span class="line">      BaseFont base = BaseFont.createFont(<span class="string">"STSong-Light"</span>, <span class="string">"UniGB-UCS2-H"</span>, BaseFont.EMBEDDED);</span><br><span class="line">      PdfGState gs = <span class="keyword">new</span> PdfGState();</span><br><span class="line">      <span class="keyword">int</span> total = reader.getNumberOfPages() + <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; total; i++) &#123;</span><br><span class="line">         PdfContentByte content = stamper.getOverContent(i);</span><br><span class="line">         gs.setFillOpacity(<span class="number">0.8f</span>);</span><br><span class="line">         content.setGState(gs);</span><br><span class="line">         content.beginText();</span><br><span class="line">         content.setColorFill(Color.LIGHT_GRAY);</span><br><span class="line">         content.setFontAndSize(base, <span class="number">40</span>);</span><br><span class="line">         content.setTextMatrix(<span class="number">70</span>, <span class="number">200</span>);</span><br><span class="line">         Rectangle pageRect = stamper.getReader().getPageSizeWithRotation(i);</span><br><span class="line">         <span class="comment">// 计算水印X,Y坐标</span></span><br><span class="line">         <span class="keyword">float</span> x = pageRect.getWidth() / <span class="number">2</span>;</span><br><span class="line">         <span class="keyword">float</span> y = pageRect.getHeight() / <span class="number">2</span>;</span><br><span class="line">         content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y, <span class="number">40</span>);</span><br><span class="line">         <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">80</span>; j &lt;= <span class="number">160</span>; j += <span class="number">80</span>) &#123;</span><br><span class="line">            content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y - j, <span class="number">40</span>);</span><br><span class="line">            content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y + j, <span class="number">40</span>);</span><br><span class="line">         &#125;</span><br><span class="line">         content.endText();</span><br><span class="line">      &#125;</span><br><span class="line">      stamper.setFormFlattening(<span class="keyword">true</span>);</span><br><span class="line">      stamper.close();</span><br><span class="line">      doc = <span class="keyword">new</span> Document();</span><br><span class="line">      PdfCopy copy = <span class="keyword">new</span> PdfCopy(doc, out);</span><br><span class="line">      <span class="comment">// 设置文件为只读模式</span></span><br><span class="line">      String md5 = <span class="string">"test111"</span>;</span><br><span class="line">      copy.setEncryption(<span class="keyword">null</span>, md5.getBytes(), PdfWriter.ALLOW_PRINTING, PdfWriter.STANDARD_ENCRYPTION_128);</span><br><span class="line">      doc.open();</span><br><span class="line">      <span class="comment">// 获取总页数</span></span><br><span class="line">      <span class="keyword">int</span> pages = reader.getNumberOfPages();</span><br><span class="line">      <span class="comment">// 这一句话 一定要在循环外面。否则生成的文件会是现有文件的【pages】倍</span></span><br><span class="line">      PdfReader pdfReader = <span class="keyword">new</span> PdfReader(bos.toByteArray());</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= pages; i++) &#123;</span><br><span class="line">         PdfImportedPage importPage = copy.getImportedPage(pdfReader, i);</span><br><span class="line">         copy.addPage(importPage);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">catch</span> (DocumentException | IOException e) &#123;</span><br><span class="line">      e.printStackTrace();</span><br><span class="line">   &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (doc != <span class="keyword">null</span>) &#123;</span><br><span class="line">         doc.close();</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="对外提供方法"><a href="#对外提供方法" class="headerlink" title="对外提供方法"></a>对外提供方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fillDataToFile</span><span class="params">(String from, String out, UserInfo userInfo)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      Map&lt;String, Object&gt; userInfoMap = buildUserInfo(userInfo);</span><br><span class="line">      doCommon(from, <span class="keyword">new</span> FileOutputStream(out), userInfoMap);</span><br><span class="line">   &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">      e.printStackTrace();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="填充数据"><a href="#填充数据" class="headerlink" title="填充数据"></a>填充数据</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Object&gt; <span class="title">buildUserInfo</span><span class="params">(UserInfo userInfo)</span> </span>&#123;</span><br><span class="line">   Map&lt;String, Object&gt; map = Maps.newHashMap();</span><br><span class="line">   map.put(<span class="string">"name"</span>,userInfo.getName());</span><br><span class="line">   map.put(<span class="string">"age"</span>,userInfo.getAge());</span><br><span class="line">   map.put(<span class="string">"sex"</span>,userInfo.getSex());</span><br><span class="line">   map.put(<span class="string">"love"</span>,userInfo.getLove());</span><br><span class="line">   map.put(<span class="string">"job"</span>,userInfo.getJob());</span><br><span class="line">   map.put(<span class="string">"mobile"</span>,userInfo.getMobile());</span><br><span class="line">   <span class="keyword">return</span> map;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试方法"><a href="#测试方法" class="headerlink" title="测试方法"></a>测试方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fillDataToFileTest</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   UserInfo userInfo = UserInfo.builder()</span><br><span class="line">         .name(<span class="string">"isbing"</span>)</span><br><span class="line">         .age(<span class="number">24</span>)</span><br><span class="line">         .sex(<span class="string">"man"</span>)</span><br><span class="line">         .love(<span class="string">"coding"</span>)</span><br><span class="line">         .job(<span class="string">"programmer"</span>)</span><br><span class="line">         .mobile(<span class="string">"1761011"</span>)</span><br><span class="line">         .build();</span><br><span class="line">   String from = <span class="string">"D:\\pdf\\tpl\\test.pdf"</span>;</span><br><span class="line">   SimpleDateFormat df = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyyMMddHHmmss"</span>);</span><br><span class="line">   String fileName = <span class="string">"test_"</span>+df.format(<span class="keyword">new</span> Date())+<span class="string">".pdf"</span>;</span><br><span class="line">   String out = <span class="string">"D:\\pdf"</span> + File.separator + fileName;</span><br><span class="line">   PdfUtils.fillDataToFile(from,out,userInfo);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><img src="/img/pdf4.png" alt=""></p>
+<p>注意：itext版本需要使用 2.1.7的。</p>
+<p>5.0+的商用 需要收费。但是2.1.7的itextasian maven远程库没有。。。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/pdf模板/" rel="tag"># pdf模板</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/02/jvm图解GC/" rel="next" title="jvm图解GC">
+                <i class="fa fa-chevron-left"></i> jvm图解GC
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">27</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#需求"><span class="nav-number">1.</span> <span class="nav-text">需求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">2.</span> <span class="nav-text">准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#这里采用的是-itext来实现"><span class="nav-number">2.1.</span> <span class="nav-text">这里采用的是 itext来实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">3.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#核心处理方法"><span class="nav-number">3.1.</span> <span class="nav-text">核心处理方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对外提供方法"><span class="nav-number">3.2.</span> <span class="nav-text">对外提供方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#填充数据"><span class="nav-number">3.3.</span> <span class="nav-text">填充数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试方法"><span class="nav-number">3.4.</span> <span class="nav-text">测试方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效果"><span class="nav-number">4.</span> <span class="nav-text">效果</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

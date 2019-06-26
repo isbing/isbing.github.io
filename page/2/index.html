@@ -322,6 +322,212 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/12/Redis集群模式/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/12/Redis集群模式/" class="post-title-link" itemprop="url">redis集群模式</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-12 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-12T17:01:21+08:00">2019-02-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 15:27:38" itemprop="dateModified" datetime="2019-03-02T15:27:38+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在 <code>Redis 3.0</code> 之前，使用 <strong>哨兵</strong>（ <code>sentinel</code>）机制来监控各个节点之间的状态。 <code>Redis Cluster</code> 是 <code>Redis</code> 的 <strong>分布式解决方案</strong>，在 <code>3.0</code> 版本正式推出，有效地解决了 <code>Redis</code> 在 <strong>分布式</strong> 方面的需求。当遇到 <strong>单机内存</strong>、<strong>并发</strong>、<strong>流量</strong> 等瓶颈时，可以采用 <code>Cluster</code> 架构方案达到 <strong>负载均衡</strong> 的目的。</p>
+<h1 id="Redis集群方案"><a href="#Redis集群方案" class="headerlink" title="Redis集群方案"></a>Redis集群方案</h1><p><code>RedisCluster</code> 集群模式通常具有 <strong>高可用</strong>、<strong>可扩展性</strong>、<strong>分布式</strong>、<strong>容错</strong> 等特性。 <code>Redis</code> 分布式方案一般有两种：</p>
+<h2 id="客户端分区方案"><a href="#客户端分区方案" class="headerlink" title="客户端分区方案"></a>客户端分区方案</h2><p><strong>客户端</strong> 就已经决定数据会被 <strong>存储</strong> 到哪个 <code>redis</code> 节点或者从哪个 <code>redis</code> 节点 <strong>读取数据</strong>。其主要思想是采用 <strong>哈希算法（hash slot算法）</strong> 将 <code>Redis</code> 数据的 <code>key</code> 进行散列，通过 <code>hash</code>函数，特定的 <code>key</code>会 <strong>映射</strong> 到特定的 <code>Redis</code> 节点上。</p>
+<h1 id="数据分布"><a href="#数据分布" class="headerlink" title="数据分布"></a>数据分布</h1><p>由于 <code>RedisCluster</code> 采用 <strong>哈希分区规则</strong>，这里重点讨论 <strong>哈希分区</strong>。常见的 <strong>哈希分区</strong> 规则有几种，下面分别介绍：</p>
+<h2 id="普通hash算法"><a href="#普通hash算法" class="headerlink" title="普通hash算法"></a>普通hash算法</h2><p>使用特定的数据，如 <code>Redis</code> 的 <strong>键</strong> 或 <strong>用户</strong> <code>ID</code>，再根据 <strong>节点数量</strong> <code>N</code> 使用公式： <code>hash（key）%N</code> 计算出 <strong>哈希值</strong>，用来决定数据 <strong>映射</strong> 到哪一个节点上。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p>这种方式的突出优点是 <strong>简单性</strong>，常用于 <strong>数据库</strong> 的 <strong>分库分表规则</strong>。一般采用 <strong>预分区</strong> 的方式，提前根据 <strong>数据量</strong> 规划好 <strong>分区数</strong>，比如划分为 <code>512</code> 或 <code>1024</code> 张表，保证可支撑未来一段时间的 <strong>数据容量</strong>，再根据 <strong>负载情况</strong> 将 <strong>表</strong> 迁移到其他 <strong>数据库</strong>中。扩容时通常采用 <strong>翻倍扩容</strong>，避免 <strong>数据映射</strong> 全部被 <strong>打乱</strong>，导致 <strong>全量迁移</strong> 的情况。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p>当 <strong>节点数量</strong> 变化时，如 <strong>扩容</strong> 或 <strong>收缩</strong> 节点，数据节点 <strong>映射关系</strong> 需要重新计算，会导致数据的 <strong>重新迁移</strong>。</p>
+<h2 id="一致性哈希算法"><a href="#一致性哈希算法" class="headerlink" title="一致性哈希算法"></a>一致性哈希算法</h2><p><strong>一致性哈希</strong> 可以很好的解决 <strong>稳定性问题</strong>，可以将所有的 <strong>存储节点</strong> 排列在 <strong>收尾相接</strong> 的 <code>Hash</code> 环上，每个 <code>key</code> 在计算 <code>Hash</code> 后会 <strong>顺时针</strong> 找到 <strong>临接</strong> 的 <strong>存储节点</strong> 存放。而当有节点 <strong>加入</strong> 或 <strong>退出</strong> 时，仅影响该节点在 <code>Hash</code> 环上 <strong>顺时针相邻</strong> 的 <strong>后续节点</strong>。</p>
+<ul>
+<li><strong>优点</strong></li>
+</ul>
+<p><strong>加入</strong> 和 <strong>删除</strong> 节点只影响 <strong>哈希环</strong> 中 <strong>顺时针方向</strong> 的 <strong>相邻的节点</strong>，对其他节点无影响。</p>
+<ul>
+<li><strong>缺点</strong></li>
+</ul>
+<p><strong>加减节点</strong> 会造成 <strong>哈希环</strong> 中部分数据 <strong>无法命中</strong>。当使用 <strong>少量节点</strong> 时，<strong>节点变化</strong>将大范围影响 <strong>哈希环</strong> 中 <strong>数据映射</strong>，不适合 <strong>少量数据节点</strong> 的分布式方案。<strong>普通</strong> 的 <strong>一致性哈希分区</strong> 在增减节点时需要 <strong>增加一倍</strong> 或 <strong>减去一半</strong> 节点才能保证 <strong>数据</strong> 和 <strong>负载的均衡</strong>。</p>
+<h2 id="hash-slot算法"><a href="#hash-slot算法" class="headerlink" title="hash slot算法"></a>hash slot算法</h2><p><strong>虚拟槽分区</strong> 巧妙地使用了 <strong>哈希空间</strong>，使用 <strong>分散度良好</strong> 的 <strong>哈希函数</strong> 把所有数据 <strong>映射</strong> 到一个 <strong>固定范围</strong> 的 <strong>整数集合</strong> 中，整数定义为 <strong>槽</strong>（ <code>slot</code>）。这个范围一般 <strong>远远大于</strong> 节点数，比如 <code>RedisCluster</code> 槽范围是 <code>0~16383</code>。<strong>槽</strong> 是集群内 <strong>数据管理</strong> 和 <strong>迁移</strong> 的 <strong>基本单位</strong>。采用 <strong>大范围槽</strong> 的主要目的是为了方便 <strong>数据拆分</strong> 和 <strong>集群扩展</strong>。每个节点会负责 <strong>一定数量的槽</strong>，如图所示：</p>
+<p><img src="/img/redis2.jpg" alt=""></p>
+<p>当前集群有 <code>5</code> 个节点，每个节点平均大约负责 <code>3276</code> 个 <strong>槽</strong>。由于采用 <strong>高质量</strong> 的 <strong>哈希算法</strong>，每个槽所映射的数据通常比较 <strong>均匀</strong>，将数据平均划分到 <code>5</code> 个节点进行 <strong>数据分区</strong>。 <code>RedisCluster</code> 就是采用 <strong>虚拟槽分区</strong>。</p>
+<ul>
+<li><strong>节点1</strong>： 包含 <code>0</code> 到 <code>3276</code> 号哈希槽。</li>
+<li><strong>节点2</strong>：包含 <code>3277</code> 到 <code>6553</code> 号哈希槽。</li>
+<li><strong>节点3</strong>：包含 <code>6554</code> 到 <code>9830</code> 号哈希槽。</li>
+<li><strong>节点4</strong>：包含 <code>9831</code> 到 <code>13107</code> 号哈希槽。</li>
+<li><strong>节点5</strong>：包含 <code>13108</code> 到 <code>16383</code> 号哈希槽。</li>
+</ul>
+<p>这种结构很容易 <strong>添加</strong> 或者 <strong>删除</strong> 节点。如果 <strong>增加</strong> 一个节点 <code>6</code>，就需要从节点 <code>1~5</code> 获得部分 <strong>槽</strong> 分配到节点 <code>6</code> 上。如果想 <strong>移除</strong> 节点 <code>1</code>，需要将节点 <code>1</code> 中的 <strong>槽</strong>移到节点 <code>2~5</code> 上，然后将 <strong>没有任何槽</strong> 的节点 <code>1</code> 从集群中 <strong>移除</strong> 即可。</p>
+<p>由于从一个节点将 <strong>哈希槽</strong> 移动到另一个节点并不会 <strong>停止服务</strong>，所以无论 <strong>添加删除</strong> 或者 <strong>改变</strong> 某个节点的 <strong>哈希槽的数量</strong> 都不会造成 <strong>集群不可用</strong> 的状态.</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/11/redis哨兵模式简单介绍/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -544,6 +750,195 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/redis简介/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/10/redis简介/" class="post-title-link" itemprop="url">redis简介</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 11:47:16" itemprop="dateModified" datetime="2019-03-02T11:47:16+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><code>Redis</code> 是一种基于 <strong>键值对</strong> 的 <code>NoSQL</code> 数据库。</p>
+<h1 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h1><ol>
+<li>速度快，最快可达到 <code>10wQPS</code>（基于 <strong>内存</strong>， <code>C</code> 语言，<strong>单线程</strong> 架构）；</li>
+<li>基于 <strong>键值对</strong> ( <code>key/value</code>) 的数据结构服务器。全称 <code>RemoteDictionaryServer</code>。包括 <code>string</code>(<strong>字符串</strong>)、 <code>hash</code>(<strong>哈希</strong>)、 <code>list</code>(<strong>列表</strong>)、 <code>set</code>(<strong>集合</strong>)、 <code>zset</code>(<strong>有序集合</strong>)、 <code>bitmap</code>(<strong>位图</strong>)。同时在 <strong>字符串</strong> 的基础上演变出 <strong>位图</strong>（ <code>BitMaps</code>）和 <code>HyperLogLog</code> 两种数据结构。 <code>3.2</code> 版本中加入 <code>GEO</code>（<strong>地理信息位置</strong>）。</li>
+<li>丰富的功能。例如：<strong>键过期</strong>（缓存），<strong>发布订阅</strong>（消息队列）， <code>Lua</code> 脚本（自己实现 <code>Redis</code> 命令），<strong>事务</strong>，<strong>流水线</strong>（ <code>Pipeline</code>，用于减少网络开销）。</li>
+<li>简单稳定。无外部库依赖，单线程模型。</li>
+<li>客户端语言多。</li>
+<li><strong>持久化</strong>（支持两种 <strong>持久化</strong> 方式 <code>RDB</code> 和 <code>AOF</code>）。</li>
+<li><strong>主从复制</strong>（分布式的基础）。</li>
+<li><strong>高可用</strong>（ <code>RedisSentinel</code>），<strong>分布式</strong>（ <code>RedisCluster</code>）和 <strong>水平扩容</strong>。</li>
+</ol>
+<h1 id="Redis的应用场景"><a href="#Redis的应用场景" class="headerlink" title="Redis的应用场景"></a>Redis的应用场景</h1><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>合理的使用 <strong>缓存</strong> 能够明显加快访问的速度，同时降低数据源的压力。这也是 <code>Redis</code> 最常用的功能。 <code>Redis</code> 提供了 <strong>键值过期时间</strong>（ <code>EXPIRE key seconds</code>）设置，并且也提供了灵活控制 <strong>最大内存</strong> 和 <strong>内存溢出</strong> 后的 <strong>淘汰策略</strong>。</p>
+<h2 id="排行榜"><a href="#排行榜" class="headerlink" title="排行榜"></a>排行榜</h2><p>每个网站都有自己的排行榜，例如按照 <strong>热度排名</strong> 的排行榜，<strong>发布时间</strong> 的排行榜，<strong>答题排行榜</strong> 等等。 <code>Redis</code> 提供了 <strong>列表</strong>（ <code>list</code>）和 <strong>有序集合</strong>（ <code>zset</code>）数据结构，合理的使用这些数据结构，可以很方便的构建各种排行榜系统。</p>
+<h2 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h2><p><strong>计数器</strong> 在网站应用中非常重要。例如：<strong>点赞数</strong>加 <code>1</code>，<strong>浏览数</strong> 加 <code>1</code>。还有常用的 <strong>限流操作</strong>，限制每个用户每秒 <strong>访问系统的次数</strong> 等等。 <code>Redis</code> 支持 <strong>计数功能</strong>（ <code>INCR key</code>），而且计数的 <strong>性能</strong> 也非常好，计数的同时也可以设置 <strong>超时时间</strong>，这样就可以 <strong>实现限流</strong>。</p>
+<h2 id="社交网络"><a href="#社交网络" class="headerlink" title="社交网络"></a>社交网络</h2><p>赞/踩，粉丝，共同好友/喜好，推送，下拉刷新等是社交网站必备的功能。由于社交网站 <strong>访问量通常比较大</strong>，而且 <strong>传统的数据库</strong> 不太适合保存这类数据， <code>Redis</code>提供的 <strong>数据结构</strong> 可以相对比较容易实现这些功能。</p>
+<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p><code>Redis</code> 提供的 <strong>发布订阅</strong>（ <code>PUB/SUB</code>）和 <strong>阻塞队列</strong> 的功能，虽然和专业的消息队列比，还 <strong>不够强大</strong>，但对于一般的消息队列功能基本满足。</p>
+<h1 id="Redis安装与配置"><a href="#Redis安装与配置" class="headerlink" title="Redis安装与配置"></a>Redis安装与配置</h1><p>这里就不展示redis的安装与配置了。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/对象创建的方式/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -706,195 +1101,6 @@
 <blockquote>
 <p><strong>指针：</strong> 指向对象，代表一个对象在内存中的起始地址。<strong>句柄：</strong> 可以理解为指向指针的指针，维护着对象的指针。句柄不直接指向对象，而是指向对象的指针（句柄不发生变化，指向固定内存地址），再由对象的指针指向对象的真实内存地址。</p>
 </blockquote>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/redis简介/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/10/redis简介/" class="post-title-link" itemprop="url">redis简介</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 11:47:16" itemprop="dateModified" datetime="2019-03-02T11:47:16+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>Redis</code> 是一种基于 <strong>键值对</strong> 的 <code>NoSQL</code> 数据库。</p>
-<h1 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h1><ol>
-<li>速度快，最快可达到 <code>10wQPS</code>（基于 <strong>内存</strong>， <code>C</code> 语言，<strong>单线程</strong> 架构）；</li>
-<li>基于 <strong>键值对</strong> ( <code>key/value</code>) 的数据结构服务器。全称 <code>RemoteDictionaryServer</code>。包括 <code>string</code>(<strong>字符串</strong>)、 <code>hash</code>(<strong>哈希</strong>)、 <code>list</code>(<strong>列表</strong>)、 <code>set</code>(<strong>集合</strong>)、 <code>zset</code>(<strong>有序集合</strong>)、 <code>bitmap</code>(<strong>位图</strong>)。同时在 <strong>字符串</strong> 的基础上演变出 <strong>位图</strong>（ <code>BitMaps</code>）和 <code>HyperLogLog</code> 两种数据结构。 <code>3.2</code> 版本中加入 <code>GEO</code>（<strong>地理信息位置</strong>）。</li>
-<li>丰富的功能。例如：<strong>键过期</strong>（缓存），<strong>发布订阅</strong>（消息队列）， <code>Lua</code> 脚本（自己实现 <code>Redis</code> 命令），<strong>事务</strong>，<strong>流水线</strong>（ <code>Pipeline</code>，用于减少网络开销）。</li>
-<li>简单稳定。无外部库依赖，单线程模型。</li>
-<li>客户端语言多。</li>
-<li><strong>持久化</strong>（支持两种 <strong>持久化</strong> 方式 <code>RDB</code> 和 <code>AOF</code>）。</li>
-<li><strong>主从复制</strong>（分布式的基础）。</li>
-<li><strong>高可用</strong>（ <code>RedisSentinel</code>），<strong>分布式</strong>（ <code>RedisCluster</code>）和 <strong>水平扩容</strong>。</li>
-</ol>
-<h1 id="Redis的应用场景"><a href="#Redis的应用场景" class="headerlink" title="Redis的应用场景"></a>Redis的应用场景</h1><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>合理的使用 <strong>缓存</strong> 能够明显加快访问的速度，同时降低数据源的压力。这也是 <code>Redis</code> 最常用的功能。 <code>Redis</code> 提供了 <strong>键值过期时间</strong>（ <code>EXPIRE key seconds</code>）设置，并且也提供了灵活控制 <strong>最大内存</strong> 和 <strong>内存溢出</strong> 后的 <strong>淘汰策略</strong>。</p>
-<h2 id="排行榜"><a href="#排行榜" class="headerlink" title="排行榜"></a>排行榜</h2><p>每个网站都有自己的排行榜，例如按照 <strong>热度排名</strong> 的排行榜，<strong>发布时间</strong> 的排行榜，<strong>答题排行榜</strong> 等等。 <code>Redis</code> 提供了 <strong>列表</strong>（ <code>list</code>）和 <strong>有序集合</strong>（ <code>zset</code>）数据结构，合理的使用这些数据结构，可以很方便的构建各种排行榜系统。</p>
-<h2 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h2><p><strong>计数器</strong> 在网站应用中非常重要。例如：<strong>点赞数</strong>加 <code>1</code>，<strong>浏览数</strong> 加 <code>1</code>。还有常用的 <strong>限流操作</strong>，限制每个用户每秒 <strong>访问系统的次数</strong> 等等。 <code>Redis</code> 支持 <strong>计数功能</strong>（ <code>INCR key</code>），而且计数的 <strong>性能</strong> 也非常好，计数的同时也可以设置 <strong>超时时间</strong>，这样就可以 <strong>实现限流</strong>。</p>
-<h2 id="社交网络"><a href="#社交网络" class="headerlink" title="社交网络"></a>社交网络</h2><p>赞/踩，粉丝，共同好友/喜好，推送，下拉刷新等是社交网站必备的功能。由于社交网站 <strong>访问量通常比较大</strong>，而且 <strong>传统的数据库</strong> 不太适合保存这类数据， <code>Redis</code>提供的 <strong>数据结构</strong> 可以相对比较容易实现这些功能。</p>
-<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p><code>Redis</code> 提供的 <strong>发布订阅</strong>（ <code>PUB/SUB</code>）和 <strong>阻塞队列</strong> 的功能，虽然和专业的消息队列比，还 <strong>不够强大</strong>，但对于一般的消息队列功能基本满足。</p>
-<h1 id="Redis安装与配置"><a href="#Redis安装与配置" class="headerlink" title="Redis安装与配置"></a>Redis安装与配置</h1><p>这里就不展示redis的安装与配置了。</p>
 
           
         
@@ -2091,202 +2297,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/04/熔断器Hystrix/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/04/熔断器Hystrix/" class="post-title-link" itemprop="url">熔断器Hystrix</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-01-04 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-04T17:01:21+08:00">2019-01-04</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 11:15:36" itemprop="dateModified" datetime="2019-03-02T11:15:36+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/springcloud/" itemprop="url" rel="index"><span itemprop="name">springcloud</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在微服务框架 <code>SpringCloud</code> 中，可以用 <code>RestTemplate</code> 配合 <code>Ribbon</code> 或 <code>Feign</code>实现 <strong>服务与服务</strong> 之间的 <strong>相互调用</strong>。</p>
-<p>为了保证服务的 <strong>高可用</strong>，<strong>单个服务</strong> 通常会采用 <strong>集群部署</strong>。由于 <strong>网络原因</strong>，服务并不能保证 <code>100%</code> 的 <strong>可用性</strong>，如果 <strong>单个服务</strong> 出现问题，调用这个服务就会出现 <strong>线程阻塞</strong>，此时若有 <strong>大量的请求</strong>涌入， <code>Servlet</code> 容器的 <strong>线程资源</strong> 会被耗尽，导致 <strong>服务瘫痪</strong>。</p>
-<p>服务与服务之间具有 <strong>依赖性</strong>，故障会传播，导致整个微服务系统发生 <strong>雪崩</strong>。</p>
-<h1 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h1><p><code>Netflix</code> 开源了 <code>Hystrix</code> 组件，实现了 <strong>熔断器模式</strong>， <code>SpringCloud</code> 对这个组件进行了整合。在微服务架构中，一个请求需要调用 <strong>多个服务</strong> 是非常常见的，如下图所示：</p>
-<p><img src="/img/hystrix1.jpg" alt=""></p>
-<p><strong>下层</strong> 的服务如果出现故障，会导致 <strong>故障级联效应</strong>。当对特定的服务的调用的 <strong>失败次数</strong> 达到一个 <strong>阀值</strong>（ <code>Hystrix</code> 是 <code>5</code> 秒 <code>20</code> 次），<strong>断路器</strong> 将会被打开。</p>
-<p><img src="/img/hystrix2.jpg" alt=""></p>
-<p><strong>断路器</strong> 打开后 <strong>底层服务</strong> 将会隔断，可用避免 <strong>故障级联</strong> 问题，<strong>上层服务</strong> 调用 <code>fallback</code> 方法直接返回一个 <strong>固定值</strong>。</p>
-<h2 id="在Ribbon上使用熔断器"><a href="#在Ribbon上使用熔断器" class="headerlink" title="在Ribbon上使用熔断器"></a>在Ribbon上使用熔断器</h2><p>在 <code>pom.xml</code> 文件中引入 <code>hystrix</code> 的 <strong>起步依赖</strong> <code>spring-cloud-starter-hystrix</code>：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">	&lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;</span><br><span class="line">	&lt;artifactId&gt;spring-cloud-starter-hystrix&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
-<p>在应用的启动类上使用 <code>@EnableHystrix</code> 开启 <code>hystrix</code> 的功能。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@EnableHystrix</span><br><span class="line">@EnableDiscoveryClient</span><br><span class="line">@SpringBootApplication</span><br><span class="line">public class ServiceRibbonApplication &#123;</span><br><span class="line">  </span><br><span class="line">	public static void main(String[] args) &#123;</span><br><span class="line">		SpringApplication.run(ServiceRibbonApplication.class, args);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	@Bean   </span><br><span class="line">	@LoadBalanced   </span><br><span class="line">	public RestTemplate restTemplate () &#123;   </span><br><span class="line">		return new RestTemplate ();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>使用注解 <code>@HystrixCommand</code> 标记调用失败时需要熔断的方法， <code>fallbackMethod</code>属性指定 <strong>降级方法</strong> 的 <strong>方法名</strong> 为 <code>fallback</code>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class HelloService &#123;</span><br><span class="line">  </span><br><span class="line">	@Autowired</span><br><span class="line">	private RestTemplate restTemplate;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	@HystrixCommand(fallbackMethod = &quot;fallback&quot;)</span><br><span class="line">    public String requestForHiService(String name)&#123;   </span><br><span class="line">		return restTemplate.getForObject(&quot;http://SERVICE-HI/hi?name=&quot; + name, String.class);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">	public String fallback(String name)&#123;   </span><br><span class="line">		return &quot;Fallback method invoked, name is &quot; + name;</span><br><span class="line">    </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="在Feign上使用熔断器"><a href="#在Feign上使用熔断器" class="headerlink" title="在Feign上使用熔断器"></a>在Feign上使用熔断器</h2><p><code>Feign</code> 是自带 <strong>断路器</strong> 的，不过需要在 <strong>配置文件</strong> 中开启 <code>hystrix</code> 的配置。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">feign:</span><br><span class="line">  hystrix:</span><br><span class="line">    enabled: true</span><br></pre></td></tr></table></figure>
-<p><code>Hystrix</code> 支持 <strong>降级回退</strong> 操作，当 <strong>发生熔断</strong> 或 <strong>出现错误</strong> 时，调用会执行 <strong>默认代码路径</strong>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(value = &quot;service-hi&quot;, fallback = HelloServiceFallback.class)</span><br><span class="line">public interface HelloService &#123;</span><br><span class="line">	@RequestMapping(value = &quot;/hi&quot;, method = RequestMethod.GET)</span><br><span class="line">	String sayHi(@RequestParam(value = &quot;name&quot;) String name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>通过设置 <code>fallback</code> 属性为实现 <strong>降级回退</strong> 的 <strong>类</strong>，来启用 <code>@FeignClient</code> 的 <strong>失败降级</strong>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class HelloServiceFallback implements HelloService &#123;</span><br><span class="line">   </span><br><span class="line">	@Override</span><br><span class="line">	public String sayHi (String name) &#123;   </span><br><span class="line">		return &quot;Fallback method invoked, name is &quot; + name;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果需要获取导致 <strong>回退触发</strong> 的原因，可以指定 <code>@FeignClient</code> 注解内部的 <code>fallbackFactory</code> 属性， <code>fallbackFactory</code> 属性和 <code>fallback</code> 属性不能一起使用。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@FeignClient(value = &quot;service-hi&quot;, fallbackFactory = HelloServiceFallbackFactory.class)</span><br><span class="line">public interface HelloService &#123;</span><br><span class="line">	@RequestMapping(value = &quot;/hi&quot;,method = RequestMethod.GET) </span><br><span class="line">	String sayHi(@RequestParam(value = &quot;name&quot;) String name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>然后提供一个 <code>FallbackFactory</code> 的 <strong>实现类</strong>，实现类指定 <strong>泛型参数</strong> 为 <code>HelloService</code>。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class HelloServiceFallbackFactory implements FallbackFactory&lt;HelloService&gt; &#123;</span><br><span class="line"></span><br><span class="line">	@Override</span><br><span class="line">    public HelloService create(Throwable throwable) &#123;   </span><br><span class="line">		return new HelloService() &#123;    </span><br><span class="line">			@Override</span><br><span class="line">			public String sayHi(String name) &#123;</span><br><span class="line">				return &quot;Fallback method invoked, name is &quot;</span><br><span class="line">                         + name +&quot;, message is &quot;+ throwable.getMessage();</span><br><span class="line">            </span><br><span class="line">			&#125;</span><br><span class="line">        </span><br><span class="line">		&#125;;</span><br><span class="line">    </span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2334,7 +2344,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-count">27</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -2357,7 +2367,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">categories</span>
                   </a>
                 </div>
@@ -2380,7 +2392,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>

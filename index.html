@@ -322,6 +322,188 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/25/根据pdf模板生成新的pdf文件/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/06/25/根据pdf模板生成新的pdf文件/" class="post-title-link" itemprop="url">根据pdf模板生成新的PDF文件</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-06-25 20:43:21 / Modified: 20:43:32" itemprop="dateCreated datePublished" datetime="2019-06-25T20:43:21+08:00">2019-06-25</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>当前有一堆pdf（word）文档。但是里面会有一些位置需要通过程序动态的将数据写入。</p>
+<p>可以理解为 用户查看某一个pdf模板，然后填写自己的信息。提交之后，将这些信息动态的写入刚才那个模板之中，生成属于自己的一份PDF文件。</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="这里采用的是-itext来实现"><a href="#这里采用的是-itext来实现" class="headerlink" title="这里采用的是 itext来实现"></a>这里采用的是 itext来实现</h3><ol>
+<li>制作pdf模板（假设从word文件开始）</li>
+</ol>
+<p><img src="/img/pdf1.png" alt=""></p>
+<ol start="2">
+<li>使用adobe acrobat dc 这个软件。对于当前word文件 另存为 adobe pdf。这样就成了 pdf文件</li>
+</ol>
+<p><img src="/img/pdf2.png" alt=""></p>
+<ol start="3">
+<li>定制程序中需要使用到的 占位符。点击 准备表单。</li>
+</ol>
+<p><img src="/img/pdf3.png" alt=""></p>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>取当前模板，生成一份新的PDF文件，里面会涉及到 将占位符填充，增加水印，设置密码。</p>
+<h3 id="核心处理方法"><a href="#核心处理方法" class="headerlink" title="核心处理方法"></a>核心处理方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">doCommon</span><span class="params">(String from, OutputStream out, Map&lt;String, Object&gt; data)</span> </span>&#123;</span><br><span class="line">   PdfReader reader;</span><br><span class="line">   ByteArrayOutputStream bos;</span><br><span class="line">   PdfStamper stamper;</span><br><span class="line">   Document doc = <span class="keyword">null</span>;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      reader = <span class="keyword">new</span> PdfReader(from);<span class="comment">//读取pdf模板</span></span><br><span class="line">      bos = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">      stamper = <span class="keyword">new</span> PdfStamper(reader, bos);</span><br><span class="line">      AcroFields form = stamper.getAcroFields();</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 遍历data 给pdf表单表格赋值</span></span><br><span class="line">      <span class="keyword">for</span> (String key : data.keySet()) &#123;</span><br><span class="line">         <span class="keyword">if</span> (data.get(key) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            form.setField(key, data.get(key).toString());</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 增加图片水印</span></span><br><span class="line">      BaseFont base = BaseFont.createFont(<span class="string">"STSong-Light"</span>, <span class="string">"UniGB-UCS2-H"</span>, BaseFont.EMBEDDED);</span><br><span class="line">      PdfGState gs = <span class="keyword">new</span> PdfGState();</span><br><span class="line">      <span class="keyword">int</span> total = reader.getNumberOfPages() + <span class="number">1</span>;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; total; i++) &#123;</span><br><span class="line">         PdfContentByte content = stamper.getOverContent(i);</span><br><span class="line">         gs.setFillOpacity(<span class="number">0.8f</span>);</span><br><span class="line">         content.setGState(gs);</span><br><span class="line">         content.beginText();</span><br><span class="line">         content.setColorFill(Color.LIGHT_GRAY);</span><br><span class="line">         content.setFontAndSize(base, <span class="number">40</span>);</span><br><span class="line">         content.setTextMatrix(<span class="number">70</span>, <span class="number">200</span>);</span><br><span class="line">         Rectangle pageRect = stamper.getReader().getPageSizeWithRotation(i);</span><br><span class="line">         <span class="comment">// 计算水印X,Y坐标</span></span><br><span class="line">         <span class="keyword">float</span> x = pageRect.getWidth() / <span class="number">2</span>;</span><br><span class="line">         <span class="keyword">float</span> y = pageRect.getHeight() / <span class="number">2</span>;</span><br><span class="line">         content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y, <span class="number">40</span>);</span><br><span class="line">         <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">80</span>; j &lt;= <span class="number">160</span>; j += <span class="number">80</span>) &#123;</span><br><span class="line">            content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y - j, <span class="number">40</span>);</span><br><span class="line">            content.showTextAligned(Element.ALIGN_CENTER, <span class="string">"非正式文件,请勿下载打印！"</span>, x, y + j, <span class="number">40</span>);</span><br><span class="line">         &#125;</span><br><span class="line">         content.endText();</span><br><span class="line">      &#125;</span><br><span class="line">      stamper.setFormFlattening(<span class="keyword">true</span>);</span><br><span class="line">      stamper.close();</span><br><span class="line">      doc = <span class="keyword">new</span> Document();</span><br><span class="line">      PdfCopy copy = <span class="keyword">new</span> PdfCopy(doc, out);</span><br><span class="line">      <span class="comment">// 设置文件为只读模式</span></span><br><span class="line">      String md5 = <span class="string">"test111"</span>;</span><br><span class="line">      copy.setEncryption(<span class="keyword">null</span>, md5.getBytes(), PdfWriter.ALLOW_PRINTING, PdfWriter.STANDARD_ENCRYPTION_128);</span><br><span class="line">      doc.open();</span><br><span class="line">      <span class="comment">// 获取总页数</span></span><br><span class="line">      <span class="keyword">int</span> pages = reader.getNumberOfPages();</span><br><span class="line">      <span class="comment">// 这一句话 一定要在循环外面。否则生成的文件会是现有文件的【pages】倍</span></span><br><span class="line">      PdfReader pdfReader = <span class="keyword">new</span> PdfReader(bos.toByteArray());</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= pages; i++) &#123;</span><br><span class="line">         PdfImportedPage importPage = copy.getImportedPage(pdfReader, i);</span><br><span class="line">         copy.addPage(importPage);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">catch</span> (DocumentException | IOException e) &#123;</span><br><span class="line">      e.printStackTrace();</span><br><span class="line">   &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (doc != <span class="keyword">null</span>) &#123;</span><br><span class="line">         doc.close();</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="对外提供方法"><a href="#对外提供方法" class="headerlink" title="对外提供方法"></a>对外提供方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">fillDataToFile</span><span class="params">(String from, String out, UserInfo userInfo)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      Map&lt;String, Object&gt; userInfoMap = buildUserInfo(userInfo);</span><br><span class="line">      doCommon(from, <span class="keyword">new</span> FileOutputStream(out), userInfoMap);</span><br><span class="line">   &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">      e.printStackTrace();</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="填充数据"><a href="#填充数据" class="headerlink" title="填充数据"></a>填充数据</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, Object&gt; <span class="title">buildUserInfo</span><span class="params">(UserInfo userInfo)</span> </span>&#123;</span><br><span class="line">   Map&lt;String, Object&gt; map = Maps.newHashMap();</span><br><span class="line">   map.put(<span class="string">"name"</span>,userInfo.getName());</span><br><span class="line">   map.put(<span class="string">"age"</span>,userInfo.getAge());</span><br><span class="line">   map.put(<span class="string">"sex"</span>,userInfo.getSex());</span><br><span class="line">   map.put(<span class="string">"love"</span>,userInfo.getLove());</span><br><span class="line">   map.put(<span class="string">"job"</span>,userInfo.getJob());</span><br><span class="line">   map.put(<span class="string">"mobile"</span>,userInfo.getMobile());</span><br><span class="line">   <span class="keyword">return</span> map;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试方法"><a href="#测试方法" class="headerlink" title="测试方法"></a>测试方法</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fillDataToFileTest</span><span class="params">()</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   UserInfo userInfo = UserInfo.builder()</span><br><span class="line">         .name(<span class="string">"isbing"</span>)</span><br><span class="line">         .age(<span class="number">24</span>)</span><br><span class="line">         .sex(<span class="string">"man"</span>)</span><br><span class="line">         .love(<span class="string">"coding"</span>)</span><br><span class="line">         .job(<span class="string">"programmer"</span>)</span><br><span class="line">         .mobile(<span class="string">"1761011"</span>)</span><br><span class="line">         .build();</span><br><span class="line">   String from = <span class="string">"D:\\pdf\\tpl\\test.pdf"</span>;</span><br><span class="line">   SimpleDateFormat df = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyyMMddHHmmss"</span>);</span><br><span class="line">   String fileName = <span class="string">"test_"</span>+df.format(<span class="keyword">new</span> Date())+<span class="string">".pdf"</span>;</span><br><span class="line">   String out = <span class="string">"D:\\pdf"</span> + File.separator + fileName;</span><br><span class="line">   PdfUtils.fillDataToFile(from,out,userInfo);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><img src="/img/pdf4.png" alt=""></p>
+<p>注意：itext版本需要使用 2.1.7的。</p>
+<p>5.0+的商用 需要收费。但是2.1.7的itextasian maven远程库没有。。。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/02/jvm图解GC/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1288,221 +1470,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/redis数据结构/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/14/redis数据结构/" class="post-title-link" itemprop="url">redis数据结构</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-14 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-14T17:01:21+08:00">2019-02-14</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:38:01" itemprop="dateModified" datetime="2019-03-02T15:38:01+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="全局命令"><a href="#全局命令" class="headerlink" title="全局命令"></a>全局命令</h1><p><code>Redis</code> 有 <code>5</code> 种 <strong>数据结构</strong>，它们是 <strong>键值对</strong> 中的 <strong>值</strong>，对于 <strong>键</strong> 来说有一些通用的命令。</p>
-<h2 id="查看所有键"><a href="#查看所有键" class="headerlink" title="查看所有键"></a>查看所有键</h2><blockquote>
-<p>keys *</p>
-</blockquote>
-<h2 id="键总数"><a href="#键总数" class="headerlink" title="键总数"></a>键总数</h2><blockquote>
-<p>dbsize</p>
-</blockquote>
-<p><code>dbsize</code> 命令在 <strong>计算键总数</strong> 时 <strong>不会遍历</strong> 所有键，而是直接获取 <code>Redis</code> <strong>内置的键总数变量</strong>，所以 <code>dbsize</code> 命令的 <strong>时间复杂度</strong> 是 <code>O（1）</code>。而 <code>keys</code> 命令会 <strong>遍历</strong>所有键，所以它的 <strong>时间复杂度</strong> 是 <code>O（n）</code>，当 <code>Redis</code> 保存了 <strong>大量键</strong> 时，线上环境 <strong>禁止</strong> 使用。</p>
-<h2 id="检查键是否存在"><a href="#检查键是否存在" class="headerlink" title="检查键是否存在"></a>检查键是否存在</h2><blockquote>
-<p>exists key</p>
-</blockquote>
-<h2 id="删除键"><a href="#删除键" class="headerlink" title="删除键"></a>删除键</h2><blockquote>
-<p>del key</p>
-</blockquote>
-<p><code>del</code> 是一个 <strong>通用命令</strong>，无论值是什么 <strong>数据结构</strong> 类型， <code>del</code> 命令都可以将其 <strong>删除</strong>。</p>
-<h2 id="键过期"><a href="#键过期" class="headerlink" title="键过期"></a>键过期</h2><blockquote>
-<p>expire key seconds</p>
-</blockquote>
-<p><code>Redis</code> 支持对 <strong>键</strong> 添加 <strong>过期时间</strong>，当超过过期时间后，会 <strong>自动删除键</strong></p>
-<p><code>ttl</code> 命令会返回键的 <strong>剩余过期时间</strong>，它有 <code>3</code> 种返回值：</p>
-<ul>
-<li>大于等于 <code>0</code> 的整数：表示键 <strong>剩余</strong> 的 <strong>过期时间</strong>。</li>
-<li>返回 <code>-1</code>：<strong>键</strong> 没设置 <strong>过期时间</strong>。</li>
-<li>返回 <code>-2</code>：<strong>键</strong> 不存在。</li>
-</ul>
-<p>可以通过 <code>ttl</code> 命令观察 <strong>键</strong> <code>hello</code> 的 <strong>剩余过期时间</strong></p>
-<h2 id="键的数据结构类型"><a href="#键的数据结构类型" class="headerlink" title="键的数据结构类型"></a>键的数据结构类型</h2><blockquote>
-<p>type key</p>
-</blockquote>
-<h1 id="数据结构和内部编码"><a href="#数据结构和内部编码" class="headerlink" title="数据结构和内部编码"></a>数据结构和内部编码</h1><p><code>type</code> 命令实际返回的就是当前 <strong>键</strong> 的 <strong>数据结构类型</strong>，它们分别是： <code>string</code>（<strong>字符串</strong>）、 <code>hash</code>（<strong>哈希</strong>）、 <code>list</code>（<strong>列表</strong>）、 <code>set</code>（<strong>集合</strong>）、 <code>zset</code>（<strong>有序集合</strong>），但这些只是 <code>Redis</code> 对外的 <strong>数据结构</strong>。</p>
-<p><img src="/img/redis3.jpg" alt=""></p>
-<p>对于每种 <strong>数据结构</strong>，实际上都有自己底层的 <strong>内部编码</strong> 实现，而且是 <strong>多种实现</strong>。这样 <code>Redis</code> 会在合适的 <strong>场景</strong> 选择合适的 <strong>内部编码</strong>，如图所示：</p>
-<p><img src="/img/redis4.jpg" alt=""></p>
-<p>可以看到，每种 <strong>数据结构</strong> 都有 <strong>两种以上</strong> 的 <strong>内部编码实现</strong>。例如 <code>list</code> <strong>数据结构</strong>包含了 <code>linkedlist</code> 和 <code>ziplist</code> 两种 <strong>内部编码</strong>。同时有些 <strong>内部编码</strong>，例如 <code>ziplist</code>，可以作为 <strong>多种外部数据结构</strong> 的内部实现</p>
-<h1 id="单线程架构"><a href="#单线程架构" class="headerlink" title="单线程架构"></a>单线程架构</h1><p><code>Redis</code> 使用了 <strong>单线程架构</strong> 和 <code>I/O</code> <strong>多路复用模型</strong> 来实现 <strong>高性能</strong> 的 <strong>内存数据库服务</strong>。那为什么 <strong>单线程</strong> 还能这么快，下面分析原因：</p>
-<h2 id="纯内存访问"><a href="#纯内存访问" class="headerlink" title="纯内存访问"></a>纯内存访问</h2><p><code>Redis</code> 将所有数据放在 <strong>内存</strong> 中，内存的 <strong>响应时长</strong> 大约为 <code>100</code> <strong>纳秒</strong>，这是 <code>Redis</code>达到 <strong>每秒万级别</strong> 访问的重要基础。</p>
-<h2 id="非阻塞I-O"><a href="#非阻塞I-O" class="headerlink" title="非阻塞I/O"></a>非阻塞I/O</h2><p><code>Redis</code> 使用 <code>epoll</code> 作为 <code>I/O</code> <strong>多路复用技术</strong> 的实现，再加上 <code>Redis</code> 自身的 <strong>事件处理模型</strong> 将 <code>epoll</code> 中的 <strong>连接</strong>、<strong>读写</strong>、<strong>关闭</strong> 都转换为 <strong>事件</strong>，从而不用不在 <strong>网络</strong> <code>I/O</code> 上浪费过多的时间，如图所示：</p>
-<p>采用 <strong>单线程</strong> 就能达到如此 <strong>高的性能</strong>，那么不失为一种不错的选择，因为 <strong>单线程</strong>能带来几个好处：</p>
-<ul>
-<li><strong>单线程</strong> 可以简化 <strong>数据结构和算法</strong> 的实现，开发人员不需要了解复杂的 <strong>并发数据结构</strong>。</li>
-<li><strong>单线程</strong> 避免了 <strong>线程切换</strong> 和 <strong>竞态</strong> 产生的消耗，对于服务端开发来说，<strong>锁和线程切换</strong> 通常是性能杀手。</li>
-</ul>
-<p><strong>单线程</strong> 的问题：对于 <strong>每个命令</strong> 的 <strong>执行时间</strong> 是有要求的。如果某个命令 <strong>执行过长</strong>，会造成其他命令的 <strong>阻塞</strong>，对于 <code>Redis</code> 这种 <strong>高性能</strong> 的服务来说是致命的，所以 <code>Redis</code>是面向 <strong>快速执行</strong> 场景的数据库。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/jvm-gc/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1924,6 +1891,221 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/redis数据结构/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/14/redis数据结构/" class="post-title-link" itemprop="url">redis数据结构</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-14 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-14T17:01:21+08:00">2019-02-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 15:38:01" itemprop="dateModified" datetime="2019-03-02T15:38:01+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="全局命令"><a href="#全局命令" class="headerlink" title="全局命令"></a>全局命令</h1><p><code>Redis</code> 有 <code>5</code> 种 <strong>数据结构</strong>，它们是 <strong>键值对</strong> 中的 <strong>值</strong>，对于 <strong>键</strong> 来说有一些通用的命令。</p>
+<h2 id="查看所有键"><a href="#查看所有键" class="headerlink" title="查看所有键"></a>查看所有键</h2><blockquote>
+<p>keys *</p>
+</blockquote>
+<h2 id="键总数"><a href="#键总数" class="headerlink" title="键总数"></a>键总数</h2><blockquote>
+<p>dbsize</p>
+</blockquote>
+<p><code>dbsize</code> 命令在 <strong>计算键总数</strong> 时 <strong>不会遍历</strong> 所有键，而是直接获取 <code>Redis</code> <strong>内置的键总数变量</strong>，所以 <code>dbsize</code> 命令的 <strong>时间复杂度</strong> 是 <code>O（1）</code>。而 <code>keys</code> 命令会 <strong>遍历</strong>所有键，所以它的 <strong>时间复杂度</strong> 是 <code>O（n）</code>，当 <code>Redis</code> 保存了 <strong>大量键</strong> 时，线上环境 <strong>禁止</strong> 使用。</p>
+<h2 id="检查键是否存在"><a href="#检查键是否存在" class="headerlink" title="检查键是否存在"></a>检查键是否存在</h2><blockquote>
+<p>exists key</p>
+</blockquote>
+<h2 id="删除键"><a href="#删除键" class="headerlink" title="删除键"></a>删除键</h2><blockquote>
+<p>del key</p>
+</blockquote>
+<p><code>del</code> 是一个 <strong>通用命令</strong>，无论值是什么 <strong>数据结构</strong> 类型， <code>del</code> 命令都可以将其 <strong>删除</strong>。</p>
+<h2 id="键过期"><a href="#键过期" class="headerlink" title="键过期"></a>键过期</h2><blockquote>
+<p>expire key seconds</p>
+</blockquote>
+<p><code>Redis</code> 支持对 <strong>键</strong> 添加 <strong>过期时间</strong>，当超过过期时间后，会 <strong>自动删除键</strong></p>
+<p><code>ttl</code> 命令会返回键的 <strong>剩余过期时间</strong>，它有 <code>3</code> 种返回值：</p>
+<ul>
+<li>大于等于 <code>0</code> 的整数：表示键 <strong>剩余</strong> 的 <strong>过期时间</strong>。</li>
+<li>返回 <code>-1</code>：<strong>键</strong> 没设置 <strong>过期时间</strong>。</li>
+<li>返回 <code>-2</code>：<strong>键</strong> 不存在。</li>
+</ul>
+<p>可以通过 <code>ttl</code> 命令观察 <strong>键</strong> <code>hello</code> 的 <strong>剩余过期时间</strong></p>
+<h2 id="键的数据结构类型"><a href="#键的数据结构类型" class="headerlink" title="键的数据结构类型"></a>键的数据结构类型</h2><blockquote>
+<p>type key</p>
+</blockquote>
+<h1 id="数据结构和内部编码"><a href="#数据结构和内部编码" class="headerlink" title="数据结构和内部编码"></a>数据结构和内部编码</h1><p><code>type</code> 命令实际返回的就是当前 <strong>键</strong> 的 <strong>数据结构类型</strong>，它们分别是： <code>string</code>（<strong>字符串</strong>）、 <code>hash</code>（<strong>哈希</strong>）、 <code>list</code>（<strong>列表</strong>）、 <code>set</code>（<strong>集合</strong>）、 <code>zset</code>（<strong>有序集合</strong>），但这些只是 <code>Redis</code> 对外的 <strong>数据结构</strong>。</p>
+<p><img src="/img/redis3.jpg" alt=""></p>
+<p>对于每种 <strong>数据结构</strong>，实际上都有自己底层的 <strong>内部编码</strong> 实现，而且是 <strong>多种实现</strong>。这样 <code>Redis</code> 会在合适的 <strong>场景</strong> 选择合适的 <strong>内部编码</strong>，如图所示：</p>
+<p><img src="/img/redis4.jpg" alt=""></p>
+<p>可以看到，每种 <strong>数据结构</strong> 都有 <strong>两种以上</strong> 的 <strong>内部编码实现</strong>。例如 <code>list</code> <strong>数据结构</strong>包含了 <code>linkedlist</code> 和 <code>ziplist</code> 两种 <strong>内部编码</strong>。同时有些 <strong>内部编码</strong>，例如 <code>ziplist</code>，可以作为 <strong>多种外部数据结构</strong> 的内部实现</p>
+<h1 id="单线程架构"><a href="#单线程架构" class="headerlink" title="单线程架构"></a>单线程架构</h1><p><code>Redis</code> 使用了 <strong>单线程架构</strong> 和 <code>I/O</code> <strong>多路复用模型</strong> 来实现 <strong>高性能</strong> 的 <strong>内存数据库服务</strong>。那为什么 <strong>单线程</strong> 还能这么快，下面分析原因：</p>
+<h2 id="纯内存访问"><a href="#纯内存访问" class="headerlink" title="纯内存访问"></a>纯内存访问</h2><p><code>Redis</code> 将所有数据放在 <strong>内存</strong> 中，内存的 <strong>响应时长</strong> 大约为 <code>100</code> <strong>纳秒</strong>，这是 <code>Redis</code>达到 <strong>每秒万级别</strong> 访问的重要基础。</p>
+<h2 id="非阻塞I-O"><a href="#非阻塞I-O" class="headerlink" title="非阻塞I/O"></a>非阻塞I/O</h2><p><code>Redis</code> 使用 <code>epoll</code> 作为 <code>I/O</code> <strong>多路复用技术</strong> 的实现，再加上 <code>Redis</code> 自身的 <strong>事件处理模型</strong> 将 <code>epoll</code> 中的 <strong>连接</strong>、<strong>读写</strong>、<strong>关闭</strong> 都转换为 <strong>事件</strong>，从而不用不在 <strong>网络</strong> <code>I/O</code> 上浪费过多的时间，如图所示：</p>
+<p>采用 <strong>单线程</strong> 就能达到如此 <strong>高的性能</strong>，那么不失为一种不错的选择，因为 <strong>单线程</strong>能带来几个好处：</p>
+<ul>
+<li><strong>单线程</strong> 可以简化 <strong>数据结构和算法</strong> 的实现，开发人员不需要了解复杂的 <strong>并发数据结构</strong>。</li>
+<li><strong>单线程</strong> 避免了 <strong>线程切换</strong> 和 <strong>竞态</strong> 产生的消耗，对于服务端开发来说，<strong>锁和线程切换</strong> 通常是性能杀手。</li>
+</ul>
+<p><strong>单线程</strong> 的问题：对于 <strong>每个命令</strong> 的 <strong>执行时间</strong> 是有要求的。如果某个命令 <strong>执行过长</strong>，会造成其他命令的 <strong>阻塞</strong>，对于 <code>Redis</code> 这种 <strong>高性能</strong> 的服务来说是致命的，所以 <code>Redis</code>是面向 <strong>快速执行</strong> 场景的数据库。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/13/jvm类加载器详解/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -2184,212 +2366,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/12/Redis集群模式/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/12/Redis集群模式/" class="post-title-link" itemprop="url">redis集群模式</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-12 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-12T17:01:21+08:00">2019-02-12</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:27:38" itemprop="dateModified" datetime="2019-03-02T15:27:38+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在 <code>Redis 3.0</code> 之前，使用 <strong>哨兵</strong>（ <code>sentinel</code>）机制来监控各个节点之间的状态。 <code>Redis Cluster</code> 是 <code>Redis</code> 的 <strong>分布式解决方案</strong>，在 <code>3.0</code> 版本正式推出，有效地解决了 <code>Redis</code> 在 <strong>分布式</strong> 方面的需求。当遇到 <strong>单机内存</strong>、<strong>并发</strong>、<strong>流量</strong> 等瓶颈时，可以采用 <code>Cluster</code> 架构方案达到 <strong>负载均衡</strong> 的目的。</p>
-<h1 id="Redis集群方案"><a href="#Redis集群方案" class="headerlink" title="Redis集群方案"></a>Redis集群方案</h1><p><code>RedisCluster</code> 集群模式通常具有 <strong>高可用</strong>、<strong>可扩展性</strong>、<strong>分布式</strong>、<strong>容错</strong> 等特性。 <code>Redis</code> 分布式方案一般有两种：</p>
-<h2 id="客户端分区方案"><a href="#客户端分区方案" class="headerlink" title="客户端分区方案"></a>客户端分区方案</h2><p><strong>客户端</strong> 就已经决定数据会被 <strong>存储</strong> 到哪个 <code>redis</code> 节点或者从哪个 <code>redis</code> 节点 <strong>读取数据</strong>。其主要思想是采用 <strong>哈希算法（hash slot算法）</strong> 将 <code>Redis</code> 数据的 <code>key</code> 进行散列，通过 <code>hash</code>函数，特定的 <code>key</code>会 <strong>映射</strong> 到特定的 <code>Redis</code> 节点上。</p>
-<h1 id="数据分布"><a href="#数据分布" class="headerlink" title="数据分布"></a>数据分布</h1><p>由于 <code>RedisCluster</code> 采用 <strong>哈希分区规则</strong>，这里重点讨论 <strong>哈希分区</strong>。常见的 <strong>哈希分区</strong> 规则有几种，下面分别介绍：</p>
-<h2 id="普通hash算法"><a href="#普通hash算法" class="headerlink" title="普通hash算法"></a>普通hash算法</h2><p>使用特定的数据，如 <code>Redis</code> 的 <strong>键</strong> 或 <strong>用户</strong> <code>ID</code>，再根据 <strong>节点数量</strong> <code>N</code> 使用公式： <code>hash（key）%N</code> 计算出 <strong>哈希值</strong>，用来决定数据 <strong>映射</strong> 到哪一个节点上。</p>
-<ul>
-<li><strong>优点</strong></li>
-</ul>
-<p>这种方式的突出优点是 <strong>简单性</strong>，常用于 <strong>数据库</strong> 的 <strong>分库分表规则</strong>。一般采用 <strong>预分区</strong> 的方式，提前根据 <strong>数据量</strong> 规划好 <strong>分区数</strong>，比如划分为 <code>512</code> 或 <code>1024</code> 张表，保证可支撑未来一段时间的 <strong>数据容量</strong>，再根据 <strong>负载情况</strong> 将 <strong>表</strong> 迁移到其他 <strong>数据库</strong>中。扩容时通常采用 <strong>翻倍扩容</strong>，避免 <strong>数据映射</strong> 全部被 <strong>打乱</strong>，导致 <strong>全量迁移</strong> 的情况。</p>
-<ul>
-<li><strong>缺点</strong></li>
-</ul>
-<p>当 <strong>节点数量</strong> 变化时，如 <strong>扩容</strong> 或 <strong>收缩</strong> 节点，数据节点 <strong>映射关系</strong> 需要重新计算，会导致数据的 <strong>重新迁移</strong>。</p>
-<h2 id="一致性哈希算法"><a href="#一致性哈希算法" class="headerlink" title="一致性哈希算法"></a>一致性哈希算法</h2><p><strong>一致性哈希</strong> 可以很好的解决 <strong>稳定性问题</strong>，可以将所有的 <strong>存储节点</strong> 排列在 <strong>收尾相接</strong> 的 <code>Hash</code> 环上，每个 <code>key</code> 在计算 <code>Hash</code> 后会 <strong>顺时针</strong> 找到 <strong>临接</strong> 的 <strong>存储节点</strong> 存放。而当有节点 <strong>加入</strong> 或 <strong>退出</strong> 时，仅影响该节点在 <code>Hash</code> 环上 <strong>顺时针相邻</strong> 的 <strong>后续节点</strong>。</p>
-<ul>
-<li><strong>优点</strong></li>
-</ul>
-<p><strong>加入</strong> 和 <strong>删除</strong> 节点只影响 <strong>哈希环</strong> 中 <strong>顺时针方向</strong> 的 <strong>相邻的节点</strong>，对其他节点无影响。</p>
-<ul>
-<li><strong>缺点</strong></li>
-</ul>
-<p><strong>加减节点</strong> 会造成 <strong>哈希环</strong> 中部分数据 <strong>无法命中</strong>。当使用 <strong>少量节点</strong> 时，<strong>节点变化</strong>将大范围影响 <strong>哈希环</strong> 中 <strong>数据映射</strong>，不适合 <strong>少量数据节点</strong> 的分布式方案。<strong>普通</strong> 的 <strong>一致性哈希分区</strong> 在增减节点时需要 <strong>增加一倍</strong> 或 <strong>减去一半</strong> 节点才能保证 <strong>数据</strong> 和 <strong>负载的均衡</strong>。</p>
-<h2 id="hash-slot算法"><a href="#hash-slot算法" class="headerlink" title="hash slot算法"></a>hash slot算法</h2><p><strong>虚拟槽分区</strong> 巧妙地使用了 <strong>哈希空间</strong>，使用 <strong>分散度良好</strong> 的 <strong>哈希函数</strong> 把所有数据 <strong>映射</strong> 到一个 <strong>固定范围</strong> 的 <strong>整数集合</strong> 中，整数定义为 <strong>槽</strong>（ <code>slot</code>）。这个范围一般 <strong>远远大于</strong> 节点数，比如 <code>RedisCluster</code> 槽范围是 <code>0~16383</code>。<strong>槽</strong> 是集群内 <strong>数据管理</strong> 和 <strong>迁移</strong> 的 <strong>基本单位</strong>。采用 <strong>大范围槽</strong> 的主要目的是为了方便 <strong>数据拆分</strong> 和 <strong>集群扩展</strong>。每个节点会负责 <strong>一定数量的槽</strong>，如图所示：</p>
-<p><img src="/img/redis2.jpg" alt=""></p>
-<p>当前集群有 <code>5</code> 个节点，每个节点平均大约负责 <code>3276</code> 个 <strong>槽</strong>。由于采用 <strong>高质量</strong> 的 <strong>哈希算法</strong>，每个槽所映射的数据通常比较 <strong>均匀</strong>，将数据平均划分到 <code>5</code> 个节点进行 <strong>数据分区</strong>。 <code>RedisCluster</code> 就是采用 <strong>虚拟槽分区</strong>。</p>
-<ul>
-<li><strong>节点1</strong>： 包含 <code>0</code> 到 <code>3276</code> 号哈希槽。</li>
-<li><strong>节点2</strong>：包含 <code>3277</code> 到 <code>6553</code> 号哈希槽。</li>
-<li><strong>节点3</strong>：包含 <code>6554</code> 到 <code>9830</code> 号哈希槽。</li>
-<li><strong>节点4</strong>：包含 <code>9831</code> 到 <code>13107</code> 号哈希槽。</li>
-<li><strong>节点5</strong>：包含 <code>13108</code> 到 <code>16383</code> 号哈希槽。</li>
-</ul>
-<p>这种结构很容易 <strong>添加</strong> 或者 <strong>删除</strong> 节点。如果 <strong>增加</strong> 一个节点 <code>6</code>，就需要从节点 <code>1~5</code> 获得部分 <strong>槽</strong> 分配到节点 <code>6</code> 上。如果想 <strong>移除</strong> 节点 <code>1</code>，需要将节点 <code>1</code> 中的 <strong>槽</strong>移到节点 <code>2~5</code> 上，然后将 <strong>没有任何槽</strong> 的节点 <code>1</code> 从集群中 <strong>移除</strong> 即可。</p>
-<p>由于从一个节点将 <strong>哈希槽</strong> 移动到另一个节点并不会 <strong>停止服务</strong>，所以无论 <strong>添加删除</strong> 或者 <strong>改变</strong> 某个节点的 <strong>哈希槽的数量</strong> 都不会造成 <strong>集群不可用</strong> 的状态.</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2437,7 +2413,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">26</span>
+                    <span class="site-state-item-count">27</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -2460,7 +2436,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">categories</span>
                   </a>
                 </div>
@@ -2483,7 +2461,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>
