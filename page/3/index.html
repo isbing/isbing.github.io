@@ -96,16 +96,16 @@
 
 
 
-  <meta name="description" content="你只管努力，剩下的交给天意">
+  <meta name="description" content="你只管努力、剩下的交给天意">
 <meta property="og:type" content="website">
 <meta property="og:title" content="sbing的博客">
 <meta property="og:url" content="http://yoursite.com/page/3/index.html">
 <meta property="og:site_name" content="sbing的博客">
-<meta property="og:description" content="你只管努力，剩下的交给天意">
+<meta property="og:description" content="你只管努力、剩下的交给天意">
 <meta property="og:locale" content="default">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="sbing的博客">
-<meta name="twitter:description" content="你只管努力，剩下的交给天意">
+<meta name="twitter:description" content="你只管努力、剩下的交给天意">
 
 
 
@@ -322,11 +322,187 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/23/java实现循环队列/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/23/java实现循环队列/" class="post-title-link" itemprop="url">java实现循环队列</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-01-23 17:01:21" itemprop="dateCreated datePublished" datetime="2019-01-23T17:01:21+08:00">2019-01-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-06-27 21:30:05" itemprop="dateModified" datetime="2019-06-27T21:30:05+08:00">2019-06-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/数据结构与算法/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>这里给出用数组实现的循环队列。采用牺牲一个单元格的方式判断队列满</p>
+<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyQueue</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span>[] data;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> front;<span class="comment">//头 删</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> rear;<span class="comment">//尾 插</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> max;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyQueue</span><span class="params">(<span class="keyword">int</span> max)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.max = max;</span><br><span class="line">        data = <span class="keyword">new</span> <span class="keyword">int</span>[max];</span><br><span class="line">        front = <span class="number">0</span>;</span><br><span class="line">        rear = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h1><h2 id="入队"><a href="#入队" class="headerlink" title="入队"></a>入队</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 入队 从rear入队</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">enQueue</span><span class="params">(<span class="keyword">int</span> value)</span></span>&#123;</span><br><span class="line">        <span class="comment">// 判断队列是否已满  采用牺牲单元格的做法</span></span><br><span class="line">        <span class="keyword">if</span>((rear+<span class="number">1</span>)%max == front)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"队列满"</span>);</span><br><span class="line">        data[rear] = value;</span><br><span class="line">        rear = (rear+<span class="number">1</span>)%max;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="出队"><a href="#出队" class="headerlink" title="出队"></a>出队</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 出队</span><br><span class="line">    public int deQueue()&#123;</span><br><span class="line">        // 队列为空 不能出队</span><br><span class="line">        if(front == rear)</span><br><span class="line">            throw new RuntimeException(&quot;队列空&quot;);</span><br><span class="line">        int value = data[front];</span><br><span class="line">        front = (front+1)%max;</span><br><span class="line">        return value;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/01/22/java实现栈/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -384,7 +560,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-03-02 15:56:35" itemprop="dateModified" datetime="2019-03-02T15:56:35+08:00">2019-03-02</time>
+                <time title="Modified: 2019-06-27 21:29:58" itemprop="dateModified" datetime="2019-06-27T21:29:58+08:00">2019-06-27</time>
               
             
           </span>
@@ -401,7 +577,7 @@
                 <span class="post-meta-item-text">In</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java数据结构/" itemprop="url" rel="index"><span itemprop="name">java数据结构</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/数据结构与算法/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a></span>
 
                 
                 
@@ -502,7 +678,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -698,7 +874,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -896,7 +1072,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -1085,7 +1261,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -1303,7 +1479,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -1489,7 +1665,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -1687,7 +1863,7 @@
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力，剩下的交给天意">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
       <meta itemprop="image" content="/images/avatar.gif">
     </span>
 
@@ -1931,7 +2107,7 @@
           <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
             
               <p class="site-author-name" itemprop="name">sbing</p>
-              <p class="site-description motion-element" itemprop="description">你只管努力，剩下的交给天意</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力、剩下的交给天意</p>
           </div>
 
           
@@ -1941,7 +2117,7 @@
                 
                   <a href="/archives">
                 
-                    <span class="site-state-item-count">28</span>
+                    <span class="site-state-item-count">29</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -1991,7 +2167,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">6</span>
+                      
+                    
+                    <span class="site-state-item-count">7</span>
                     <span class="site-state-item-name">tags</span>
                   </a>
                 </div>
@@ -2042,6 +2220,7 @@
 </div>
 
 
+
   <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
 
 
@@ -2056,6 +2235,32 @@
 
 
         
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="Total Visitors">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+  
+
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="Total Views">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
 
 
 

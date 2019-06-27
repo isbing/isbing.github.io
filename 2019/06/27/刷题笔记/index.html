@@ -96,25 +96,25 @@
 
 
 
-  <meta name="description" content="字符串类型 是 Redis 最基础的数据结构。字符串类型 的值实际可以是 字符串（简单 和 复杂 的字符串，例如 JSON、 XML）、数字（整数、浮点数），甚至是 二进制（图片、音频、视频），但是值最大不能超过 512MB。 incr 命令用于对值做 自增操作，返回结果分为三种情况：  值不是 整数，返回 错误。 值是 整数，返回 自增 后的结果。 键不存在，按照值为 0 自增，返回结果为 1。">
-<meta name="keywords" content="redis">
+  <meta name="description" content="LeetCode刷题笔记由于本人算法能力实在堪忧，故记录刷题过程中的心得体会。 遵循每道题会给出最优解法，当然暴力解法 有可能也会提供。 每道题目均是以题目、分析、解答的模式给出，题目中复述了该题，分析中针对题目给出了简要的解题思路分析，解答中给出了能够通过的java语言实现的解答。 有事没事就刷上这么一两道，龟速更新中，努力提高自己的算法水平。这个笔记一方面给自己提供一个整理，方便后续的复习查阅">
+<meta name="keywords" content="数据结构,LeetCode">
 <meta property="og:type" content="article">
-<meta property="og:title" content="redis之字符串">
-<meta property="og:url" content="http://yoursite.com/2019/02/17/redis之字符串/index.html">
+<meta property="og:title" content="LeetCode刷题笔记">
+<meta property="og:url" content="http://yoursite.com/2019/06/27/刷题笔记/index.html">
 <meta property="og:site_name" content="sbing的博客">
-<meta property="og:description" content="字符串类型 是 Redis 最基础的数据结构。字符串类型 的值实际可以是 字符串（简单 和 复杂 的字符串，例如 JSON、 XML）、数字（整数、浮点数），甚至是 二进制（图片、音频、视频），但是值最大不能超过 512MB。 incr 命令用于对值做 自增操作，返回结果分为三种情况：  值不是 整数，返回 错误。 值是 整数，返回 自增 后的结果。 键不存在，按照值为 0 自增，返回结果为 1。">
+<meta property="og:description" content="LeetCode刷题笔记由于本人算法能力实在堪忧，故记录刷题过程中的心得体会。 遵循每道题会给出最优解法，当然暴力解法 有可能也会提供。 每道题目均是以题目、分析、解答的模式给出，题目中复述了该题，分析中针对题目给出了简要的解题思路分析，解答中给出了能够通过的java语言实现的解答。 有事没事就刷上这么一两道，龟速更新中，努力提高自己的算法水平。这个笔记一方面给自己提供一个整理，方便后续的复习查阅">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-03-02T07:42:41.581Z">
+<meta property="og:updated_time" content="2019-06-27T13:30:31.701Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="redis之字符串">
-<meta name="twitter:description" content="字符串类型 是 Redis 最基础的数据结构。字符串类型 的值实际可以是 字符串（简单 和 复杂 的字符串，例如 JSON、 XML）、数字（整数、浮点数），甚至是 二进制（图片、音频、视频），但是值最大不能超过 512MB。 incr 命令用于对值做 自增操作，返回结果分为三种情况：  值不是 整数，返回 错误。 值是 整数，返回 自增 后的结果。 键不存在，按照值为 0 自增，返回结果为 1。">
+<meta name="twitter:title" content="LeetCode刷题笔记">
+<meta name="twitter:description" content="LeetCode刷题笔记由于本人算法能力实在堪忧，故记录刷题过程中的心得体会。 遵循每道题会给出最优解法，当然暴力解法 有可能也会提供。 每道题目均是以题目、分析、解答的模式给出，题目中复述了该题，分析中针对题目给出了简要的解题思路分析，解答中给出了能够通过的java语言实现的解答。 有事没事就刷上这么一两道，龟速更新中，努力提高自己的算法水平。这个笔记一方面给自己提供一个整理，方便后续的复习查阅">
 
 
 
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/02/17/redis之字符串/">
+  <link rel="canonical" href="http://yoursite.com/2019/06/27/刷题笔记/">
 
 
 
@@ -124,7 +124,7 @@
   };
 </script>
 
-  <title>redis之字符串 | sbing的博客</title>
+  <title>LeetCode刷题笔记 | sbing的博客</title>
   
 
 
@@ -323,7 +323,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/17/redis之字符串/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/27/刷题笔记/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
@@ -340,7 +340,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">redis之字符串
+          <h1 class="post-title" itemprop="name headline">LeetCode刷题笔记
 
               
             
@@ -366,24 +366,12 @@
                 
               
 
-              <time title="Created: 2019-02-17 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-17T17:01:21+08:00">2019-02-17</time>
+              <time title="Created: 2019-06-27 20:01:21 / Modified: 21:30:31" itemprop="dateCreated datePublished" datetime="2019-06-27T20:01:21+08:00">2019-06-27</time>
             
 
             
               
 
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:42:41" itemprop="dateModified" datetime="2019-03-02T15:42:41+08:00">2019-03-02</time>
               
             
           </span>
@@ -400,7 +388,7 @@
                 <span class="post-meta-item-text">In</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/数据结构与算法/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a></span>
 
                 
                 
@@ -442,26 +430,14 @@
       
 
       
-        <p><strong>字符串类型</strong> 是 <code>Redis</code> 最基础的数据结构。<strong>字符串类型</strong> 的值实际可以是 <strong>字符串</strong>（<strong>简单</strong> 和 <strong>复杂</strong> 的字符串，例如 <code>JSON</code>、 <code>XML</code>）、<strong>数字</strong>（整数、浮点数），甚至是 <strong>二进制</strong>（图片、音频、视频），但是值最大不能超过 <code>512MB</code>。</p>
-<p><code>incr</code> 命令用于对值做 <strong>自增操作</strong>，返回结果分为三种情况：</p>
-<ul>
-<li>值不是 <strong>整数</strong>，返回 <strong>错误</strong>。</li>
-<li>值是 <strong>整数</strong>，返回 <strong>自增</strong> 后的结果。</li>
-<li>键不存在，按照值为 <code>0</code> <strong>自增</strong>，返回结果为 <code>1</code>。</li>
-</ul>
-<p>除了 <code>incr</code> 命令， <code>Redis</code> 还提供了 <code>decr</code>（<strong>自减</strong>）、 <code>incrby</code>（<strong>自增指定数字</strong>）、 <code>decrby</code>（<strong>自减指定数字</strong>）、 <code>incrbyfloat</code>（<strong>自增浮点数</strong>）等命令操作：</p>
-<h1 id="内部编码"><a href="#内部编码" class="headerlink" title="内部编码"></a>内部编码</h1><p><strong>字符串</strong> 类型的 <strong>内部编码</strong> 有 <code>3</code> 种：</p>
-<ul>
-<li><strong>int</strong>： <code>8</code> 个字节的 <strong>长整型</strong>。</li>
-<li><strong>embstr</strong>：<strong>小于等于</strong> <code>39</code> 个字节的字符串。</li>
-<li><strong>raw</strong>：<strong>大于</strong> <code>39</code> 个字节的字符串。</li>
-</ul>
-<p><code>Redis</code> 会根据当前值的 <strong>类型</strong> 和 <strong>长度</strong> 决定使用哪种 <strong>内部编码实现</strong>。</p>
-<h1 id="典型使用场景"><a href="#典型使用场景" class="headerlink" title="典型使用场景"></a>典型使用场景</h1><h2 id="缓存功能"><a href="#缓存功能" class="headerlink" title="缓存功能"></a>缓存功能</h2><p>下面是一种比较典型的 <strong>缓存</strong> 使用场景，其中 <code>Redis</code> 作为 <strong>缓存层</strong>， <code>MySQL</code> 作为 <strong>存储层</strong>，绝大部分请求的数据都是从 <code>Redis</code> 中获取。由于 <code>Redis</code> 具有支撑 <strong>高并发</strong> 的特性，所以缓存通常能起到 <strong>加速读写</strong> 和 <strong>降低后端压力</strong> 的作用。</p>
-<h2 id="计数"><a href="#计数" class="headerlink" title="计数"></a>计数</h2><p>许多应用都会使用 <code>Redis</code> 作为 <strong>计数</strong> 的基础工具，它可以实现 <strong>快速计数</strong>、<strong>查询缓存</strong> 的功能，同时数据可以 <strong>异步落地</strong> 到其他 <strong>数据源</strong>。一般来说，视频播放数系统，就是使用 <code>Redis</code>作为 <strong>视频播放数计数</strong> 的基础组件，用户每播放一次视频，相应的视频播放数就会自增 <code>1</code>。</p>
-<h2 id="共享Session"><a href="#共享Session" class="headerlink" title="共享Session"></a>共享Session</h2><p>一个 <strong>分布式</strong> <code>Web</code> 服务将用户的 <code>Session</code> 信息（例如 <strong>用户登录信息</strong>）保存在 <strong>各自</strong> 的服务器中。这样会造成一个问题，出于 <strong>负载均衡</strong> 的考虑，<strong>分布式服务</strong> 会将用户的访问 <strong>均衡</strong> 到不同服务器上，用户 <strong>刷新一次访问</strong> 可能会发现需要 <strong>重新登录</strong>，这个问题是用户无法容忍的。</p>
-<h2 id="限速"><a href="#限速" class="headerlink" title="限速"></a>限速</h2><p>很多应用出于安全的考虑，会在每次进行登录时，让用户输入 <strong>手机验证码</strong>，从而确定是否是用户本人。但是为了 <strong>短信接口</strong> 不被 <strong>频繁访问</strong>，会 <strong>限制</strong> 用户每分钟获取 <strong>验证码</strong> 的频率。</p>
-<p>上述就是利用 <code>Redis</code> 实现了 <strong>限速功能</strong>，例如 <strong>一些网站</strong> 限制一个 <code>IP</code> 地址不能在 <strong>一秒钟之内</strong> 访问超过 <code>n</code> 次也可以采用 <strong>类似</strong> 的思路。</p>
+        <h1 id="LeetCode刷题笔记"><a href="#LeetCode刷题笔记" class="headerlink" title="LeetCode刷题笔记"></a>LeetCode刷题笔记</h1><p>由于本人算法能力实在堪忧，故记录刷题过程中的心得体会。</p>
+<p>遵循每道题会给出最优解法，当然暴力解法 有可能也会提供。</p>
+<p>每道题目均是以题目、分析、解答的模式给出，题目中复述了该题，分析中针对题目给出了简要的解题思路分析，解答中给出了能够通过的java语言实现的解答。</p>
+<p>有事没事就刷上这么一两道，龟速更新中，努力提高自己的算法水平。这个笔记一方面给自己提供一个整理，方便后续的复习查阅，另一方面如果能给各位带来一些帮助那就再好不过了。</p>
+<p><a href="https://github.com/isbing/leetcode/blob/master/problems/LeetCode125.md" target="_blank" rel="noopener"><strong>LeetCode125-判断回文串</strong></a></p>
+<p><a href="https://github.com/isbing/leetcode/blob/master/problems/LeetCode1.md" target="_blank" rel="noopener"><strong>LeetCode1-两数之和</strong></a></p>
+<p><a href="https://github.com/isbing/leetcode/blob/master/problems/LeetCode167.md" target="_blank" rel="noopener"><strong>LeetCode167-有序数组的两数之和</strong></a></p>
+<p><a href="https://github.com/isbing/leetcode/blob/master/problems/LeetCode101.md" target="_blank" rel="noopener"><strong>LeetCode101-二叉树是否对称</strong></a></p>
 
       
     </div>
@@ -485,7 +461,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/redis/" rel="tag"># redis</a>
+            <a href="/tags/数据结构/" rel="tag"># 数据结构</a>
+          
+            <a href="/tags/LeetCode/" rel="tag"># LeetCode</a>
           
         </div>
       
@@ -498,8 +476,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/02/15/java实现单链表/" rel="next" title="java实现单链表">
-                <i class="fa fa-chevron-left"></i> java实现单链表
+              <a href="/2019/06/26/hexo部署之后博客404/" rel="next" title="hexo部署之后博客404">
+                <i class="fa fa-chevron-left"></i> hexo部署之后博客404
               </a>
             
           </div>
@@ -507,10 +485,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/02/18/redis之哈希/" rel="prev" title="redis之哈希">
-                redis之哈希 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -668,7 +642,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#内部编码"><span class="nav-number">1.</span> <span class="nav-text">内部编码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#典型使用场景"><span class="nav-number">2.</span> <span class="nav-text">典型使用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存功能"><span class="nav-number">2.1.</span> <span class="nav-text">缓存功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计数"><span class="nav-number">2.2.</span> <span class="nav-text">计数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#共享Session"><span class="nav-number">2.3.</span> <span class="nav-text">共享Session</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#限速"><span class="nav-number">2.4.</span> <span class="nav-text">限速</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LeetCode刷题笔记"><span class="nav-number">1.</span> <span class="nav-text">LeetCode刷题笔记</span></a></li></ol></div>
             
 
           </div>
