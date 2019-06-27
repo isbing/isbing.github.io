@@ -322,7 +322,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/redis数据结构/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/14/java实现顺序表/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
@@ -342,7 +342,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/02/14/redis数据结构/" class="post-title-link" itemprop="url">redis数据结构</a>
+                <a href="/2019/02/14/java实现顺序表/" class="post-title-link" itemprop="url">java实现顺序表</a>
               
             
           </h1>
@@ -384,7 +384,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-03-02 15:38:01" itemprop="dateModified" datetime="2019-03-02T15:38:01+08:00">2019-03-02</time>
+                <time title="Modified: 2019-06-27 21:29:43" itemprop="dateModified" datetime="2019-06-27T21:29:43+08:00">2019-06-27</time>
               
             
           </span>
@@ -401,7 +401,7 @@
                 <span class="post-meta-item-text">In</span>
               
               
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/数据结构与算法/" itemprop="url" rel="index"><span itemprop="name">数据结构与算法</span></a></span>
 
                 
                 
@@ -438,49 +438,14 @@
       
         
           
-            <h1 id="全局命令"><a href="#全局命令" class="headerlink" title="全局命令"></a>全局命令</h1><p><code>Redis</code> 有 <code>5</code> 种 <strong>数据结构</strong>，它们是 <strong>键值对</strong> 中的 <strong>值</strong>，对于 <strong>键</strong> 来说有一些通用的命令。</p>
-<h2 id="查看所有键"><a href="#查看所有键" class="headerlink" title="查看所有键"></a>查看所有键</h2><blockquote>
-<p>keys *</p>
-</blockquote>
-<h2 id="键总数"><a href="#键总数" class="headerlink" title="键总数"></a>键总数</h2><blockquote>
-<p>dbsize</p>
-</blockquote>
-<p><code>dbsize</code> 命令在 <strong>计算键总数</strong> 时 <strong>不会遍历</strong> 所有键，而是直接获取 <code>Redis</code> <strong>内置的键总数变量</strong>，所以 <code>dbsize</code> 命令的 <strong>时间复杂度</strong> 是 <code>O（1）</code>。而 <code>keys</code> 命令会 <strong>遍历</strong>所有键，所以它的 <strong>时间复杂度</strong> 是 <code>O（n）</code>，当 <code>Redis</code> 保存了 <strong>大量键</strong> 时，线上环境 <strong>禁止</strong> 使用。</p>
-<h2 id="检查键是否存在"><a href="#检查键是否存在" class="headerlink" title="检查键是否存在"></a>检查键是否存在</h2><blockquote>
-<p>exists key</p>
-</blockquote>
-<h2 id="删除键"><a href="#删除键" class="headerlink" title="删除键"></a>删除键</h2><blockquote>
-<p>del key</p>
-</blockquote>
-<p><code>del</code> 是一个 <strong>通用命令</strong>，无论值是什么 <strong>数据结构</strong> 类型， <code>del</code> 命令都可以将其 <strong>删除</strong>。</p>
-<h2 id="键过期"><a href="#键过期" class="headerlink" title="键过期"></a>键过期</h2><blockquote>
-<p>expire key seconds</p>
-</blockquote>
-<p><code>Redis</code> 支持对 <strong>键</strong> 添加 <strong>过期时间</strong>，当超过过期时间后，会 <strong>自动删除键</strong></p>
-<p><code>ttl</code> 命令会返回键的 <strong>剩余过期时间</strong>，它有 <code>3</code> 种返回值：</p>
-<ul>
-<li>大于等于 <code>0</code> 的整数：表示键 <strong>剩余</strong> 的 <strong>过期时间</strong>。</li>
-<li>返回 <code>-1</code>：<strong>键</strong> 没设置 <strong>过期时间</strong>。</li>
-<li>返回 <code>-2</code>：<strong>键</strong> 不存在。</li>
-</ul>
-<p>可以通过 <code>ttl</code> 命令观察 <strong>键</strong> <code>hello</code> 的 <strong>剩余过期时间</strong></p>
-<h2 id="键的数据结构类型"><a href="#键的数据结构类型" class="headerlink" title="键的数据结构类型"></a>键的数据结构类型</h2><blockquote>
-<p>type key</p>
-</blockquote>
-<h1 id="数据结构和内部编码"><a href="#数据结构和内部编码" class="headerlink" title="数据结构和内部编码"></a>数据结构和内部编码</h1><p><code>type</code> 命令实际返回的就是当前 <strong>键</strong> 的 <strong>数据结构类型</strong>，它们分别是： <code>string</code>（<strong>字符串</strong>）、 <code>hash</code>（<strong>哈希</strong>）、 <code>list</code>（<strong>列表</strong>）、 <code>set</code>（<strong>集合</strong>）、 <code>zset</code>（<strong>有序集合</strong>），但这些只是 <code>Redis</code> 对外的 <strong>数据结构</strong>。</p>
-<p><img src="/img/redis3.jpg" alt=""></p>
-<p>对于每种 <strong>数据结构</strong>，实际上都有自己底层的 <strong>内部编码</strong> 实现，而且是 <strong>多种实现</strong>。这样 <code>Redis</code> 会在合适的 <strong>场景</strong> 选择合适的 <strong>内部编码</strong>，如图所示：</p>
-<p><img src="/img/redis4.jpg" alt=""></p>
-<p>可以看到，每种 <strong>数据结构</strong> 都有 <strong>两种以上</strong> 的 <strong>内部编码实现</strong>。例如 <code>list</code> <strong>数据结构</strong>包含了 <code>linkedlist</code> 和 <code>ziplist</code> 两种 <strong>内部编码</strong>。同时有些 <strong>内部编码</strong>，例如 <code>ziplist</code>，可以作为 <strong>多种外部数据结构</strong> 的内部实现</p>
-<h1 id="单线程架构"><a href="#单线程架构" class="headerlink" title="单线程架构"></a>单线程架构</h1><p><code>Redis</code> 使用了 <strong>单线程架构</strong> 和 <code>I/O</code> <strong>多路复用模型</strong> 来实现 <strong>高性能</strong> 的 <strong>内存数据库服务</strong>。那为什么 <strong>单线程</strong> 还能这么快，下面分析原因：</p>
-<h2 id="纯内存访问"><a href="#纯内存访问" class="headerlink" title="纯内存访问"></a>纯内存访问</h2><p><code>Redis</code> 将所有数据放在 <strong>内存</strong> 中，内存的 <strong>响应时长</strong> 大约为 <code>100</code> <strong>纳秒</strong>，这是 <code>Redis</code>达到 <strong>每秒万级别</strong> 访问的重要基础。</p>
-<h2 id="非阻塞I-O"><a href="#非阻塞I-O" class="headerlink" title="非阻塞I/O"></a>非阻塞I/O</h2><p><code>Redis</code> 使用 <code>epoll</code> 作为 <code>I/O</code> <strong>多路复用技术</strong> 的实现，再加上 <code>Redis</code> 自身的 <strong>事件处理模型</strong> 将 <code>epoll</code> 中的 <strong>连接</strong>、<strong>读写</strong>、<strong>关闭</strong> 都转换为 <strong>事件</strong>，从而不用不在 <strong>网络</strong> <code>I/O</code> 上浪费过多的时间，如图所示：</p>
-<p>采用 <strong>单线程</strong> 就能达到如此 <strong>高的性能</strong>，那么不失为一种不错的选择，因为 <strong>单线程</strong>能带来几个好处：</p>
-<ul>
-<li><strong>单线程</strong> 可以简化 <strong>数据结构和算法</strong> 的实现，开发人员不需要了解复杂的 <strong>并发数据结构</strong>。</li>
-<li><strong>单线程</strong> 避免了 <strong>线程切换</strong> 和 <strong>竞态</strong> 产生的消耗，对于服务端开发来说，<strong>锁和线程切换</strong> 通常是性能杀手。</li>
-</ul>
-<p><strong>单线程</strong> 的问题：对于 <strong>每个命令</strong> 的 <strong>执行时间</strong> 是有要求的。如果某个命令 <strong>执行过长</strong>，会造成其他命令的 <strong>阻塞</strong>，对于 <code>Redis</code> 这种 <strong>高性能</strong> 的服务来说是致命的，所以 <code>Redis</code>是面向 <strong>快速执行</strong> 场景的数据库。</p>
+            <p>平常学习中、都是用c/c++实现的、最近用java实现了顺序表。</p>
+<p>线性表的顺序存储是指用一组地址连续的存储单元依次存储线性表中的各个元素，使得线性表在逻辑结构上相邻的元素存储在连续的物理存储单元中，即：通过数据元素物理存储的连续性来反应元素之间逻辑上的相邻关系。采用顺序存储结构存储的线性表通常简称为顺序表。 </p>
+<h1 id="结构体"><a href="#结构体" class="headerlink" title="结构体"></a>结构体</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class MyArray &#123;</span><br><span class="line">    public int[] data;</span><br><span class="line">    public int length; //数组元素个数</span><br><span class="line">    public int max;</span><br><span class="line"></span><br><span class="line">    // 构造器中 传入 数组的最大容量</span><br><span class="line">    public MyArray(int max) &#123;</span><br><span class="line">        this.max = max;</span><br><span class="line">        data = new int[max];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="CRUD"><a href="#CRUD" class="headerlink" title="CRUD"></a>CRUD</h1><h2 id="在第i个位置上插入元素"><a href="#在第i个位置上插入元素" class="headerlink" title="在第i个位置上插入元素"></a>在第i个位置上插入元素</h2><p>在顺序表的第i个位置插入元素e，首先将顺序表第i个位置的元素依次向后移动一个位置，然后将元素e插入第i个位置，移动元素要从后往前移动元素，即：先移动最后一个元素，在移动倒数第二个元素，依次类推；插入元素之前要判断插入的位置是否合法，顺序表是否已满，在插入元素之后要将表长Length++;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// 增  在第 i 个位置 插入 value</span><br><span class="line">   public void insert(int i,int value)&#123;</span><br><span class="line">       // 位置超过 抛异常</span><br><span class="line">       if(i &gt; length+1 || i &lt; 1)</span><br><span class="line">           throw new RuntimeException(&quot;插入位置不合法&quot;);</span><br><span class="line">       if(length &gt;= max)</span><br><span class="line">           throw new RuntimeException(&quot;数组容量已满&quot;);</span><br><span class="line"></span><br><span class="line">       for(int j=length; j&gt;=i; j--)&#123;</span><br><span class="line">           data[j] = data[j-1];</span><br><span class="line">       &#125;</span><br><span class="line">       data[i-1] = value;</span><br><span class="line">       length++;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="删除第i个元素"><a href="#删除第i个元素" class="headerlink" title="删除第i个元素"></a>删除第i个元素</h2><p>删除数据表中的第i个元素，需要将表中第i个元素之后的元素依次向前移动一位，将前面的元素覆盖掉。移动元素时要想将第i+1个元素移动到第i个位置，在将第i+2个元素移动i+1的位置，直到将最后一个元素移动到它的前一个位置，进行删除操作之前要判断顺序表是否为空，删除元素之后，将表长Length–;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 删除 第i个位置的 元素</span><br><span class="line">   public int delete(int i)&#123;</span><br><span class="line">       if(i&lt;1 || i&gt;length)</span><br><span class="line">           throw new RuntimeException(&quot;删除位置不合法&quot;);</span><br><span class="line">       int value = data[i-1];</span><br><span class="line">       for(int j=i; j&lt;length; j++)</span><br><span class="line">           data[j-1] = data[j];</span><br><span class="line">       length--;</span><br><span class="line">       return value;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<h2 id="遍历"><a href="#遍历" class="headerlink" title="遍历"></a>遍历</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 遍历</span><br><span class="line">   public void display()&#123;</span><br><span class="line">       for(int i=0; i&lt;length; i++)</span><br><span class="line">           System.out.print(data[i]+&quot; &quot;);</span><br><span class="line">       System.out.println();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 
           
         
@@ -1240,195 +1205,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/redis简介/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="sbing">
-      <meta itemprop="description" content="你只管努力、剩下的交给天意">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="sbing的博客">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/02/10/redis简介/" class="post-title-link" itemprop="url">redis简介</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 11:47:16" itemprop="dateModified" datetime="2019-03-02T11:47:16+08:00">2019-03-02</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p><code>Redis</code> 是一种基于 <strong>键值对</strong> 的 <code>NoSQL</code> 数据库。</p>
-<h1 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h1><ol>
-<li>速度快，最快可达到 <code>10wQPS</code>（基于 <strong>内存</strong>， <code>C</code> 语言，<strong>单线程</strong> 架构）；</li>
-<li>基于 <strong>键值对</strong> ( <code>key/value</code>) 的数据结构服务器。全称 <code>RemoteDictionaryServer</code>。包括 <code>string</code>(<strong>字符串</strong>)、 <code>hash</code>(<strong>哈希</strong>)、 <code>list</code>(<strong>列表</strong>)、 <code>set</code>(<strong>集合</strong>)、 <code>zset</code>(<strong>有序集合</strong>)、 <code>bitmap</code>(<strong>位图</strong>)。同时在 <strong>字符串</strong> 的基础上演变出 <strong>位图</strong>（ <code>BitMaps</code>）和 <code>HyperLogLog</code> 两种数据结构。 <code>3.2</code> 版本中加入 <code>GEO</code>（<strong>地理信息位置</strong>）。</li>
-<li>丰富的功能。例如：<strong>键过期</strong>（缓存），<strong>发布订阅</strong>（消息队列）， <code>Lua</code> 脚本（自己实现 <code>Redis</code> 命令），<strong>事务</strong>，<strong>流水线</strong>（ <code>Pipeline</code>，用于减少网络开销）。</li>
-<li>简单稳定。无外部库依赖，单线程模型。</li>
-<li>客户端语言多。</li>
-<li><strong>持久化</strong>（支持两种 <strong>持久化</strong> 方式 <code>RDB</code> 和 <code>AOF</code>）。</li>
-<li><strong>主从复制</strong>（分布式的基础）。</li>
-<li><strong>高可用</strong>（ <code>RedisSentinel</code>），<strong>分布式</strong>（ <code>RedisCluster</code>）和 <strong>水平扩容</strong>。</li>
-</ol>
-<h1 id="Redis的应用场景"><a href="#Redis的应用场景" class="headerlink" title="Redis的应用场景"></a>Redis的应用场景</h1><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>合理的使用 <strong>缓存</strong> 能够明显加快访问的速度，同时降低数据源的压力。这也是 <code>Redis</code> 最常用的功能。 <code>Redis</code> 提供了 <strong>键值过期时间</strong>（ <code>EXPIRE key seconds</code>）设置，并且也提供了灵活控制 <strong>最大内存</strong> 和 <strong>内存溢出</strong> 后的 <strong>淘汰策略</strong>。</p>
-<h2 id="排行榜"><a href="#排行榜" class="headerlink" title="排行榜"></a>排行榜</h2><p>每个网站都有自己的排行榜，例如按照 <strong>热度排名</strong> 的排行榜，<strong>发布时间</strong> 的排行榜，<strong>答题排行榜</strong> 等等。 <code>Redis</code> 提供了 <strong>列表</strong>（ <code>list</code>）和 <strong>有序集合</strong>（ <code>zset</code>）数据结构，合理的使用这些数据结构，可以很方便的构建各种排行榜系统。</p>
-<h2 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h2><p><strong>计数器</strong> 在网站应用中非常重要。例如：<strong>点赞数</strong>加 <code>1</code>，<strong>浏览数</strong> 加 <code>1</code>。还有常用的 <strong>限流操作</strong>，限制每个用户每秒 <strong>访问系统的次数</strong> 等等。 <code>Redis</code> 支持 <strong>计数功能</strong>（ <code>INCR key</code>），而且计数的 <strong>性能</strong> 也非常好，计数的同时也可以设置 <strong>超时时间</strong>，这样就可以 <strong>实现限流</strong>。</p>
-<h2 id="社交网络"><a href="#社交网络" class="headerlink" title="社交网络"></a>社交网络</h2><p>赞/踩，粉丝，共同好友/喜好，推送，下拉刷新等是社交网站必备的功能。由于社交网站 <strong>访问量通常比较大</strong>，而且 <strong>传统的数据库</strong> 不太适合保存这类数据， <code>Redis</code>提供的 <strong>数据结构</strong> 可以相对比较容易实现这些功能。</p>
-<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p><code>Redis</code> 提供的 <strong>发布订阅</strong>（ <code>PUB/SUB</code>）和 <strong>阻塞队列</strong> 的功能，虽然和专业的消息队列比，还 <strong>不够强大</strong>，但对于一般的消息队列功能基本满足。</p>
-<h1 id="Redis安装与配置"><a href="#Redis安装与配置" class="headerlink" title="Redis安装与配置"></a>Redis安装与配置</h1><p>这里就不展示redis的安装与配置了。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/对象创建的方式/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1591,6 +1367,195 @@
 <blockquote>
 <p><strong>指针：</strong> 指向对象，代表一个对象在内存中的起始地址。<strong>句柄：</strong> 可以理解为指向指针的指针，维护着对象的指针。句柄不直接指向对象，而是指向对象的指针（句柄不发生变化，指向固定内存地址），再由对象的指针指向对象的真实内存地址。</p>
 </blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/10/redis简介/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/02/10/redis简介/" class="post-title-link" itemprop="url">redis简介</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-02-10 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-10T17:01:21+08:00">2019-02-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-03-02 11:47:16" itemprop="dateModified" datetime="2019-03-02T11:47:16+08:00">2019-03-02</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/redis/" itemprop="url" rel="index"><span itemprop="name">redis</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p><code>Redis</code> 是一种基于 <strong>键值对</strong> 的 <code>NoSQL</code> 数据库。</p>
+<h1 id="Redis的特性"><a href="#Redis的特性" class="headerlink" title="Redis的特性"></a>Redis的特性</h1><ol>
+<li>速度快，最快可达到 <code>10wQPS</code>（基于 <strong>内存</strong>， <code>C</code> 语言，<strong>单线程</strong> 架构）；</li>
+<li>基于 <strong>键值对</strong> ( <code>key/value</code>) 的数据结构服务器。全称 <code>RemoteDictionaryServer</code>。包括 <code>string</code>(<strong>字符串</strong>)、 <code>hash</code>(<strong>哈希</strong>)、 <code>list</code>(<strong>列表</strong>)、 <code>set</code>(<strong>集合</strong>)、 <code>zset</code>(<strong>有序集合</strong>)、 <code>bitmap</code>(<strong>位图</strong>)。同时在 <strong>字符串</strong> 的基础上演变出 <strong>位图</strong>（ <code>BitMaps</code>）和 <code>HyperLogLog</code> 两种数据结构。 <code>3.2</code> 版本中加入 <code>GEO</code>（<strong>地理信息位置</strong>）。</li>
+<li>丰富的功能。例如：<strong>键过期</strong>（缓存），<strong>发布订阅</strong>（消息队列）， <code>Lua</code> 脚本（自己实现 <code>Redis</code> 命令），<strong>事务</strong>，<strong>流水线</strong>（ <code>Pipeline</code>，用于减少网络开销）。</li>
+<li>简单稳定。无外部库依赖，单线程模型。</li>
+<li>客户端语言多。</li>
+<li><strong>持久化</strong>（支持两种 <strong>持久化</strong> 方式 <code>RDB</code> 和 <code>AOF</code>）。</li>
+<li><strong>主从复制</strong>（分布式的基础）。</li>
+<li><strong>高可用</strong>（ <code>RedisSentinel</code>），<strong>分布式</strong>（ <code>RedisCluster</code>）和 <strong>水平扩容</strong>。</li>
+</ol>
+<h1 id="Redis的应用场景"><a href="#Redis的应用场景" class="headerlink" title="Redis的应用场景"></a>Redis的应用场景</h1><h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><p>合理的使用 <strong>缓存</strong> 能够明显加快访问的速度，同时降低数据源的压力。这也是 <code>Redis</code> 最常用的功能。 <code>Redis</code> 提供了 <strong>键值过期时间</strong>（ <code>EXPIRE key seconds</code>）设置，并且也提供了灵活控制 <strong>最大内存</strong> 和 <strong>内存溢出</strong> 后的 <strong>淘汰策略</strong>。</p>
+<h2 id="排行榜"><a href="#排行榜" class="headerlink" title="排行榜"></a>排行榜</h2><p>每个网站都有自己的排行榜，例如按照 <strong>热度排名</strong> 的排行榜，<strong>发布时间</strong> 的排行榜，<strong>答题排行榜</strong> 等等。 <code>Redis</code> 提供了 <strong>列表</strong>（ <code>list</code>）和 <strong>有序集合</strong>（ <code>zset</code>）数据结构，合理的使用这些数据结构，可以很方便的构建各种排行榜系统。</p>
+<h2 id="计数器"><a href="#计数器" class="headerlink" title="计数器"></a>计数器</h2><p><strong>计数器</strong> 在网站应用中非常重要。例如：<strong>点赞数</strong>加 <code>1</code>，<strong>浏览数</strong> 加 <code>1</code>。还有常用的 <strong>限流操作</strong>，限制每个用户每秒 <strong>访问系统的次数</strong> 等等。 <code>Redis</code> 支持 <strong>计数功能</strong>（ <code>INCR key</code>），而且计数的 <strong>性能</strong> 也非常好，计数的同时也可以设置 <strong>超时时间</strong>，这样就可以 <strong>实现限流</strong>。</p>
+<h2 id="社交网络"><a href="#社交网络" class="headerlink" title="社交网络"></a>社交网络</h2><p>赞/踩，粉丝，共同好友/喜好，推送，下拉刷新等是社交网站必备的功能。由于社交网站 <strong>访问量通常比较大</strong>，而且 <strong>传统的数据库</strong> 不太适合保存这类数据， <code>Redis</code>提供的 <strong>数据结构</strong> 可以相对比较容易实现这些功能。</p>
+<h2 id="消息队列"><a href="#消息队列" class="headerlink" title="消息队列"></a>消息队列</h2><p><code>Redis</code> 提供的 <strong>发布订阅</strong>（ <code>PUB/SUB</code>）和 <strong>阻塞队列</strong> 的功能，虽然和专业的消息队列比，还 <strong>不够强大</strong>，但对于一般的消息队列功能基本满足。</p>
+<h1 id="Redis安装与配置"><a href="#Redis安装与配置" class="headerlink" title="Redis安装与配置"></a>Redis安装与配置</h1><p>这里就不展示redis的安装与配置了。</p>
 
           
         
@@ -2600,32 +2565,6 @@
 
 
         
-<div class="busuanzi-count">
-  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-
-  
-    <span class="post-meta-item-icon">
-      <i class="fa fa-user"></i>
-    </span>
-    <span class="site-uv" title="Total Visitors">
-      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
-    </span>
-  
-
-  
-    <span class="post-meta-divider">|</span>
-  
-
-  
-    <span class="post-meta-item-icon">
-      <i class="fa fa-eye"></i>
-    </span>
-    <span class="site-pv" title="Total Views">
-      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
-    </span>
-  
-</div>
-
 
 
 
