@@ -96,27 +96,27 @@
 
 
 
-  <meta name="description" content="在 Redis 3.0 之前，使用 哨兵（ sentinel）机制来监控各个节点之间的状态。 Redis Cluster 是 Redis 的 分布式解决方案，在 3.0 版本正式推出，有效地解决了 Redis 在 分布式 方面的需求。当遇到 单机内存、并发、流量 等瓶颈时，可以采用 Cluster 架构方案达到 负载均衡 的目的。 Redis集群方案RedisCluster 集群模式通常具有 高可">
+  <meta name="description" content="redis没有直接使用C语言传统的字符串，而是自己构建了一种名为简单动态字符串（SDS）的结构，并将SDS用作redis的默认字符串表示。  C语言传统字符串：以空字符结尾的字符数组；使用长度N+1的字符数组来表示长度为N的字符串  SDS1234567891011struct sdshdr&amp;#123;    // 记录buf数组中已使用字节的数量    // 等于SDS所保存字符后的长度	int">
 <meta name="keywords" content="redis">
 <meta property="og:type" content="article">
-<meta property="og:title" content="redis集群模式">
-<meta property="og:url" content="http://yoursite.com/2019/02/12/Redis集群模式/index.html">
+<meta property="og:title" content="redis底层结构之-SDS">
+<meta property="og:url" content="http://yoursite.com/2019/07/10/redis的底层数据类型之SDS/index.html">
 <meta property="og:site_name" content="sbing的博客">
-<meta property="og:description" content="在 Redis 3.0 之前，使用 哨兵（ sentinel）机制来监控各个节点之间的状态。 Redis Cluster 是 Redis 的 分布式解决方案，在 3.0 版本正式推出，有效地解决了 Redis 在 分布式 方面的需求。当遇到 单机内存、并发、流量 等瓶颈时，可以采用 Cluster 架构方案达到 负载均衡 的目的。 Redis集群方案RedisCluster 集群模式通常具有 高可">
+<meta property="og:description" content="redis没有直接使用C语言传统的字符串，而是自己构建了一种名为简单动态字符串（SDS）的结构，并将SDS用作redis的默认字符串表示。  C语言传统字符串：以空字符结尾的字符数组；使用长度N+1的字符数组来表示长度为N的字符串  SDS1234567891011struct sdshdr&amp;#123;    // 记录buf数组中已使用字节的数量    // 等于SDS所保存字符后的长度	int">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="http://yoursite.com/img/redis2.jpg">
-<meta property="og:updated_time" content="2019-03-02T07:27:38.011Z">
+<meta property="og:image" content="http://yoursite.com/img/redis/sds1.png">
+<meta property="og:updated_time" content="2019-07-10T13:11:41.979Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="redis集群模式">
-<meta name="twitter:description" content="在 Redis 3.0 之前，使用 哨兵（ sentinel）机制来监控各个节点之间的状态。 Redis Cluster 是 Redis 的 分布式解决方案，在 3.0 版本正式推出，有效地解决了 Redis 在 分布式 方面的需求。当遇到 单机内存、并发、流量 等瓶颈时，可以采用 Cluster 架构方案达到 负载均衡 的目的。 Redis集群方案RedisCluster 集群模式通常具有 高可">
-<meta name="twitter:image" content="http://yoursite.com/img/redis2.jpg">
+<meta name="twitter:title" content="redis底层结构之-SDS">
+<meta name="twitter:description" content="redis没有直接使用C语言传统的字符串，而是自己构建了一种名为简单动态字符串（SDS）的结构，并将SDS用作redis的默认字符串表示。  C语言传统字符串：以空字符结尾的字符数组；使用长度N+1的字符数组来表示长度为N的字符串  SDS1234567891011struct sdshdr&amp;#123;    // 记录buf数组中已使用字节的数量    // 等于SDS所保存字符后的长度	int">
+<meta name="twitter:image" content="http://yoursite.com/img/redis/sds1.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/02/12/Redis集群模式/">
+  <link rel="canonical" href="http://yoursite.com/2019/07/10/redis的底层数据类型之SDS/">
 
 
 
@@ -126,7 +126,7 @@
   };
 </script>
 
-  <title>redis集群模式 | sbing的博客</title>
+  <title>redis底层结构之-SDS | sbing的博客</title>
   
 
 
@@ -325,7 +325,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/12/Redis集群模式/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/10/redis的底层数据类型之SDS/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
       <meta itemprop="name" content="sbing">
@@ -342,7 +342,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">redis集群模式
+          <h1 class="post-title" itemprop="name headline">redis底层结构之-SDS
 
               
             
@@ -368,24 +368,12 @@
                 
               
 
-              <time title="Created: 2019-02-12 17:01:21" itemprop="dateCreated datePublished" datetime="2019-02-12T17:01:21+08:00">2019-02-12</time>
+              <time title="Created: 2019-07-10 17:01:21 / Modified: 21:11:41" itemprop="dateCreated datePublished" datetime="2019-07-10T17:01:21+08:00">2019-07-10</time>
             
 
             
               
 
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-03-02 15:27:38" itemprop="dateModified" datetime="2019-03-02T15:27:38+08:00">2019-03-02</time>
               
             
           </span>
@@ -437,40 +425,75 @@
       
 
       
-        <p>在 <code>Redis 3.0</code> 之前，使用 <strong>哨兵</strong>（ <code>sentinel</code>）机制来监控各个节点之间的状态。 <code>Redis Cluster</code> 是 <code>Redis</code> 的 <strong>分布式解决方案</strong>，在 <code>3.0</code> 版本正式推出，有效地解决了 <code>Redis</code> 在 <strong>分布式</strong> 方面的需求。当遇到 <strong>单机内存</strong>、<strong>并发</strong>、<strong>流量</strong> 等瓶颈时，可以采用 <code>Cluster</code> 架构方案达到 <strong>负载均衡</strong> 的目的。</p>
-<h1 id="Redis集群方案"><a href="#Redis集群方案" class="headerlink" title="Redis集群方案"></a>Redis集群方案</h1><p><code>RedisCluster</code> 集群模式通常具有 <strong>高可用</strong>、<strong>可扩展性</strong>、<strong>分布式</strong>、<strong>容错</strong> 等特性。 <code>Redis</code> 分布式方案一般有两种：</p>
-<h2 id="客户端分区方案"><a href="#客户端分区方案" class="headerlink" title="客户端分区方案"></a>客户端分区方案</h2><p><strong>客户端</strong> 就已经决定数据会被 <strong>存储</strong> 到哪个 <code>redis</code> 节点或者从哪个 <code>redis</code> 节点 <strong>读取数据</strong>。其主要思想是采用 <strong>哈希算法（hash slot算法）</strong> 将 <code>Redis</code> 数据的 <code>key</code> 进行散列，通过 <code>hash</code>函数，特定的 <code>key</code>会 <strong>映射</strong> 到特定的 <code>Redis</code> 节点上。</p>
-<h1 id="数据分布"><a href="#数据分布" class="headerlink" title="数据分布"></a>数据分布</h1><p>由于 <code>RedisCluster</code> 采用 <strong>哈希分区规则</strong>，这里重点讨论 <strong>哈希分区</strong>。常见的 <strong>哈希分区</strong> 规则有几种，下面分别介绍：</p>
-<h2 id="普通hash算法"><a href="#普通hash算法" class="headerlink" title="普通hash算法"></a>普通hash算法</h2><p>使用特定的数据，如 <code>Redis</code> 的 <strong>键</strong> 或 <strong>用户</strong> <code>ID</code>，再根据 <strong>节点数量</strong> <code>N</code> 使用公式： <code>hash（key）%N</code> 计算出 <strong>哈希值</strong>，用来决定数据 <strong>映射</strong> 到哪一个节点上。</p>
+        <p>redis没有直接使用C语言传统的字符串，而是自己构建了一种名为简单动态字符串（SDS）的结构，并将SDS用作redis的默认字符串表示。</p>
 <ul>
-<li><strong>优点</strong></li>
+<li>C语言传统字符串：以空字符结尾的字符数组；使用长度N+1的字符数组来表示长度为N的字符串</li>
 </ul>
-<p>这种方式的突出优点是 <strong>简单性</strong>，常用于 <strong>数据库</strong> 的 <strong>分库分表规则</strong>。一般采用 <strong>预分区</strong> 的方式，提前根据 <strong>数据量</strong> 规划好 <strong>分区数</strong>，比如划分为 <code>512</code> 或 <code>1024</code> 张表，保证可支撑未来一段时间的 <strong>数据容量</strong>，再根据 <strong>负载情况</strong> 将 <strong>表</strong> 迁移到其他 <strong>数据库</strong>中。扩容时通常采用 <strong>翻倍扩容</strong>，避免 <strong>数据映射</strong> 全部被 <strong>打乱</strong>，导致 <strong>全量迁移</strong> 的情况。</p>
+<h1 id="SDS"><a href="#SDS" class="headerlink" title="SDS"></a>SDS</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">struct sdshdr&#123;</span><br><span class="line">    <span class="comment">// 记录buf数组中已使用字节的数量</span></span><br><span class="line">    <span class="comment">// 等于SDS所保存字符后的长度</span></span><br><span class="line">	<span class="keyword">int</span> len;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 记录buf数组中未使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> free;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 字节数组，用于保存字符串</span></span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <ul>
-<li><strong>缺点</strong></li>
+<li>可以明显看出 buf数组的长度 = len（已使用长度） + free（未使用长度）</li>
 </ul>
-<p>当 <strong>节点数量</strong> 变化时，如 <strong>扩容</strong> 或 <strong>收缩</strong> 节点，数据节点 <strong>映射关系</strong> 需要重新计算，会导致数据的 <strong>重新迁移</strong>。</p>
-<h2 id="一致性哈希算法"><a href="#一致性哈希算法" class="headerlink" title="一致性哈希算法"></a>一致性哈希算法</h2><p><strong>一致性哈希</strong> 可以很好的解决 <strong>稳定性问题</strong>，可以将所有的 <strong>存储节点</strong> 排列在 <strong>收尾相接</strong> 的 <code>Hash</code> 环上，每个 <code>key</code> 在计算 <code>Hash</code> 后会 <strong>顺时针</strong> 找到 <strong>临接</strong> 的 <strong>存储节点</strong> 存放。而当有节点 <strong>加入</strong> 或 <strong>退出</strong> 时，仅影响该节点在 <code>Hash</code> 环上 <strong>顺时针相邻</strong> 的 <strong>后续节点</strong>。</p>
+<a id="more"></a> 
+<h1 id="举例说明"><a href="#举例说明" class="headerlink" title="举例说明"></a>举例说明</h1><p><img src="/img/redis/sds1.png" alt=""></p>
 <ul>
-<li><strong>优点</strong></li>
+<li>free值为5，表示这个SDS有5字节的空间未使用</li>
+<li>len值为5，保存了一个五字节长的字符串</li>
+<li>buf是一个字节数组，保存了 ‘R’，’e’，’d’，’i’，’s’，五个已使用字符，还有一个空字符 ‘\0’，不算len的长度，还有5个字节的空间未使用</li>
 </ul>
-<p><strong>加入</strong> 和 <strong>删除</strong> 节点只影响 <strong>哈希环</strong> 中 <strong>顺时针方向</strong> 的 <strong>相邻的节点</strong>，对其他节点无影响。</p>
+<p>相当于buf的长度为 buf.length = len + free + 1。但是真实情况下，这个1字节的空间不会算在len属性里面</p>
+<h1 id="SDS这样设计的好处"><a href="#SDS这样设计的好处" class="headerlink" title="SDS这样设计的好处"></a>SDS这样设计的好处</h1><ol>
+<li>获取字符串的长度 时间为O(1)</li>
+<li>杜绝缓冲区溢出</li>
+<li>减少修改字符串时带来的内存重分配次数</li>
+<li>二进制安全（可以保存文本或二进制数据）<ul>
+<li>c字符串只能保存文本数据，不能保存图片、音频、视频等二进制数据</li>
+<li>buf称为字节数组的原因–并不是用这个数组保存的字符，而是保存的二进制数据</li>
+</ul>
+</li>
+<li>兼容部分C字符串函数</li>
+</ol>
+<h2 id="好处一—获取长度时间为O-1"><a href="#好处一—获取长度时间为O-1" class="headerlink" title="好处一—获取长度时间为O(1)"></a>好处一—获取长度时间为O(1)</h2><ul>
+<li>C 语言中，获取字符串的长度需要用指针遍历字符串，时间复杂度为 O(n)，而 SDS 的长度，直接从len 获取复杂度为 O(1)。</li>
+<li>对一个非常长的字符串键反复执行strlen命令，不会对系统性能造成任何影响</li>
+</ul>
+<h2 id="好处二—杜绝缓冲区溢出"><a href="#好处二—杜绝缓冲区溢出" class="headerlink" title="好处二—杜绝缓冲区溢出"></a>好处二—杜绝缓冲区溢出</h2><p>c语言中，假设此时正在做字符串的拼接操作</p>
+<p>char <em>strcat(char </em>dest, const char *src)；将src的内容拼接到dest的后面</p>
+<p>假设已经为dest分配了足够多的内存，可以容纳src字符串中的所有内容。但是假设不成立，就会造成缓冲区溢出</p>
 <ul>
-<li><strong>缺点</strong></li>
+<li>缓冲区溢出的理解：假设内存中紧邻着两个字符后S1,S2。S1保存了redis，S2保存了MongoDb，如果执行strcat(s1,” Cluster”)；将s1的内容修改为“Redis Cluster”，但是却忘记了在strcat之前为s1分配足够多的空间，就会将s1的数据溢出到s2所在的空间中，导致s2保存的内容被修改</li>
 </ul>
-<p><strong>加减节点</strong> 会造成 <strong>哈希环</strong> 中部分数据 <strong>无法命中</strong>。当使用 <strong>少量节点</strong> 时，<strong>节点变化</strong>将大范围影响 <strong>哈希环</strong> 中 <strong>数据映射</strong>，不适合 <strong>少量数据节点</strong> 的分布式方案。<strong>普通</strong> 的 <strong>一致性哈希分区</strong> 在增减节点时需要 <strong>增加一倍</strong> 或 <strong>减去一半</strong> 节点才能保证 <strong>数据</strong> 和 <strong>负载的均衡</strong>。</p>
-<h2 id="hash-slot算法"><a href="#hash-slot算法" class="headerlink" title="hash slot算法"></a>hash slot算法</h2><p><strong>虚拟槽分区</strong> 巧妙地使用了 <strong>哈希空间</strong>，使用 <strong>分散度良好</strong> 的 <strong>哈希函数</strong> 把所有数据 <strong>映射</strong> 到一个 <strong>固定范围</strong> 的 <strong>整数集合</strong> 中，整数定义为 <strong>槽</strong>（ <code>slot</code>）。这个范围一般 <strong>远远大于</strong> 节点数，比如 <code>RedisCluster</code> 槽范围是 <code>0~16383</code>。<strong>槽</strong> 是集群内 <strong>数据管理</strong> 和 <strong>迁移</strong> 的 <strong>基本单位</strong>。采用 <strong>大范围槽</strong> 的主要目的是为了方便 <strong>数据拆分</strong> 和 <strong>集群扩展</strong>。每个节点会负责 <strong>一定数量的槽</strong>，如图所示：</p>
-<p><img src="/img/redis2.jpg" alt=""></p>
-<p>当前集群有 <code>5</code> 个节点，每个节点平均大约负责 <code>3276</code> 个 <strong>槽</strong>。由于采用 <strong>高质量</strong> 的 <strong>哈希算法</strong>，每个槽所映射的数据通常比较 <strong>均匀</strong>，将数据平均划分到 <code>5</code> 个节点进行 <strong>数据分区</strong>。 <code>RedisCluster</code> 就是采用 <strong>虚拟槽分区</strong>。</p>
+<p>SDS的空间分配策略就杜绝了发生缓冲区溢出的可能性，它需要先验证 free的长度，如果free 不够就会扩容整个 buf，防止溢出。</p>
+<h2 id="好处三—减少修改字符串时带来的内存重分配次数"><a href="#好处三—减少修改字符串时带来的内存重分配次数" class="headerlink" title="好处三—减少修改字符串时带来的内存重分配次数"></a>好处三—减少修改字符串时带来的内存重分配次数</h2><p>c字符串每次增长或者缩短一个字符串时，都会对这个字符串数组进行一次内存重分配操作</p>
 <ul>
-<li><strong>节点1</strong>： 包含 <code>0</code> 到 <code>3276</code> 号哈希槽。</li>
-<li><strong>节点2</strong>：包含 <code>3277</code> 到 <code>6553</code> 号哈希槽。</li>
-<li><strong>节点3</strong>：包含 <code>6554</code> 到 <code>9830</code> 号哈希槽。</li>
-<li><strong>节点4</strong>：包含 <code>9831</code> 到 <code>13107</code> 号哈希槽。</li>
-<li><strong>节点5</strong>：包含 <code>13108</code> 到 <code>16383</code> 号哈希槽。</li>
+<li><p>如果程序执行的是增长字符串的操作， 比如拼接操作(append), 那么在执行这个操作之前， 程序需要先通过内存重分配来扩展底层数组的空间大小一如果忘了这步就会产生缓冲区溢出。</p>
+</li>
+<li><p>如果程序执行的是缩短字符串的操作，比如截断操作(trim), 那么在执行这个操作之后，程序需要通过内存重分配来释放字符串不再使用的那部分空间——如果忘了这一步就会产生内存泄漏。</p>
+</li>
 </ul>
-<p>这种结构很容易 <strong>添加</strong> 或者 <strong>删除</strong> 节点。如果 <strong>增加</strong> 一个节点 <code>6</code>，就需要从节点 <code>1~5</code> 获得部分 <strong>槽</strong> 分配到节点 <code>6</code> 上。如果想 <strong>移除</strong> 节点 <code>1</code>，需要将节点 <code>1</code> 中的 <strong>槽</strong>移到节点 <code>2~5</code> 上，然后将 <strong>没有任何槽</strong> 的节点 <code>1</code> 从集群中 <strong>移除</strong> 即可。</p>
-<p>由于从一个节点将 <strong>哈希槽</strong> 移动到另一个节点并不会 <strong>停止服务</strong>，所以无论 <strong>添加删除</strong> 或者 <strong>改变</strong> 某个节点的 <strong>哈希槽的数量</strong> 都不会造成 <strong>集群不可用</strong> 的状态.</p>
+<p>redis 作为高性能的内存数据库，需要较高的相应速度。字符串也很大概率的频繁修改。 </p>
+<p>SDS 通过未使用空间这个参数，将字符串的长度和底层buf的长度之间的额关系解除了。</p>
+<p>buf的长度也不是字符串的长度。基于这个分设计 SDS 实现了空间的··预分配··和··惰性释放··。</p>
+<h3 id="空间预分配"><a href="#空间预分配" class="headerlink" title="空间预分配"></a>空间预分配</h3><p>空间预分配用于优化SDS的字符串增长操作。</p>
+<ul>
+<li><p>如果对SDS进行修改之后，len小于1MB，free = len（目前小于1MB的大小），buf的实际长度 = len + free + 1byte = len * 2 + 1byte（额外的1字节用于保存空字符）</p>
+</li>
+<li><p>如果对SDS进行修改之后，len大于等于1MB，free = 1MB，len = 目前现在的大小，buf的实际长度 = len + 1MB + 1byte</p>
+</li>
+</ul>
+<p>通过空间预分配策略，redis可以减少连续执行字符串增长操作所需要的内存重分配次数。因为每次增长字符串之后，实际的Buf长度变长了，用于下次你的长度变更。</p>
+<p>补充小知识：</p>
+<p>我们可能会想 字符串增长是个什么操作？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; set str <span class="string">"hello"</span></span><br><span class="line">OK</span><br><span class="line">redis&gt; append str <span class="string">" world"</span></span><br><span class="line">(integer) <span class="number">11</span></span><br><span class="line">redis&gt; get str</span><br><span class="line"><span class="string">"hello world"</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>append命令</li>
+</ul>
+<h3 id="惰性释放"><a href="#惰性释放" class="headerlink" title="惰性释放"></a>惰性释放</h3><p>惰性空间释放用于优化SDS的字符串缩短操作</p>
+<ul>
+<li>如果缩短 SDS 的字符串长度，redis并不是马上减少 SDS 所占内存。只是增加 free 的长度。同时向外提供 API 。真正需要释放的时候，才去重新缩小 SDS 所占的内存</li>
+</ul>
+<h3 id="二进制安全"><a href="#二进制安全" class="headerlink" title="二进制安全"></a>二进制安全</h3><ul>
+<li>C 语言中的字符串是以 ”\0“ 作为字符串的结束标记。而 SDS 是使用 len 的长度来标记字符串的结束。所以SDS 可以存储字符串之外的任意二进制流。因为有可能有的二进制流在流中就包含了”\0“造成字符串提前结束。也就是说 SDS 不依赖 “\0” 作为结束的依据。</li>
+</ul>
 
       
     </div>
@@ -507,8 +530,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/02/11/redis哨兵模式简单介绍/" rel="next" title="redis哨兵模式简单介绍">
-                <i class="fa fa-chevron-left"></i> redis哨兵模式简单介绍
+              <a href="/2019/07/08/redis的开篇介绍/" rel="next" title="redis开篇介绍">
+                <i class="fa fa-chevron-left"></i> redis开篇介绍
               </a>
             
           </div>
@@ -516,10 +539,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/02/13/jvm类加载器详解/" rel="prev" title="jvm类加载器详解">
-                jvm类加载器详解 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -677,7 +696,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Redis集群方案"><span class="nav-number">1.</span> <span class="nav-text">Redis集群方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端分区方案"><span class="nav-number">1.1.</span> <span class="nav-text">客户端分区方案</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据分布"><span class="nav-number">2.</span> <span class="nav-text">数据分布</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#普通hash算法"><span class="nav-number">2.1.</span> <span class="nav-text">普通hash算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一致性哈希算法"><span class="nav-number">2.2.</span> <span class="nav-text">一致性哈希算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hash-slot算法"><span class="nav-number">2.3.</span> <span class="nav-text">hash slot算法</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SDS"><span class="nav-number">1.</span> <span class="nav-text">SDS</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#举例说明"><span class="nav-number">2.</span> <span class="nav-text">举例说明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SDS这样设计的好处"><span class="nav-number">3.</span> <span class="nav-text">SDS这样设计的好处</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#好处一—获取长度时间为O-1"><span class="nav-number">3.1.</span> <span class="nav-text">好处一—获取长度时间为O(1)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#好处二—杜绝缓冲区溢出"><span class="nav-number">3.2.</span> <span class="nav-text">好处二—杜绝缓冲区溢出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#好处三—减少修改字符串时带来的内存重分配次数"><span class="nav-number">3.3.</span> <span class="nav-text">好处三—减少修改字符串时带来的内存重分配次数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#空间预分配"><span class="nav-number">3.3.1.</span> <span class="nav-text">空间预分配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#惰性释放"><span class="nav-number">3.3.2.</span> <span class="nav-text">惰性释放</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二进制安全"><span class="nav-number">3.3.3.</span> <span class="nav-text">二进制安全</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
