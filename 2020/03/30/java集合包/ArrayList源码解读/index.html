@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.0.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="这篇文章带领大家走进ArrayList的源码世界。首先用最简短的大白话概括下文章的内容  底层基于数组，查找元素时间o(1)，增加删除元素涉及到元素移位，时间为o(n) 无参构造器时，就只做了一个操作，Object[] elementData = {} 无参构造器时，第一次添加新元素，会触发数组扩容方法，会用到数组默认容量10 无参构造器时，数组容量满时再次增加元素，也会触发数组扩容方法，会进行1">
+<meta name="keywords" content="java集合源码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ArrayList源码解读">
+<meta property="og:url" content="http://yoursite.com/2020/03/30/java集合包/ArrayList源码解读/index.html">
+<meta property="og:site_name" content="sbing的博客">
+<meta property="og:description" content="这篇文章带领大家走进ArrayList的源码世界。首先用最简短的大白话概括下文章的内容  底层基于数组，查找元素时间o(1)，增加删除元素涉及到元素移位，时间为o(n) 无参构造器时，就只做了一个操作，Object[] elementData = {} 无参构造器时，第一次添加新元素，会触发数组扩容方法，会用到数组默认容量10 无参构造器时，数组容量满时再次增加元素，也会触发数组扩容方法，会进行1">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-04-01T10:05:30.115Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ArrayList源码解读">
+<meta name="twitter:description" content="这篇文章带领大家走进ArrayList的源码世界。首先用最简短的大白话概括下文章的内容  底层基于数组，查找元素时间o(1)，增加删除元素涉及到元素移位，时间为o(n) 无参构造器时，就只做了一个操作，Object[] elementData = {} 无参构造器时，第一次添加新元素，会触发数组扩容方法，会用到数组默认容量10 无参构造器时，数组容量满时再次增加元素，也会触发数组扩容方法，会进行1">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/03/30/java集合包/ArrayList源码解读/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>ArrayList源码解读 | sbing的博客</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">sbing的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-首页">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-分类">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-标签">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-归档">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/30/java集合包/ArrayList源码解读/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="sbing">
+      <meta itemprop="description" content="你只管努力、剩下的交给天意">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="sbing的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ArrayList源码解读
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2020-03-30 00:00:00" itemprop="dateCreated datePublished" datetime="2020-03-30T00:00:00+08:00">2020-03-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-04-01 18:05:30" itemprop="dateModified" datetime="2020-04-01T18:05:30+08:00">2020-04-01</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/java集合源码/" itemprop="url" rel="index"><span itemprop="name">java集合源码</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这篇文章带领大家走进ArrayList的源码世界。首先用最简短的大白话概括下文章的内容</p>
+<ul>
+<li>底层基于数组，查找元素时间o(1)，增加删除元素涉及到元素移位，时间为o(n)</li>
+<li>无参构造器时，就只做了一个操作，Object[] elementData = {}</li>
+<li>无参构造器时，第一次添加新元素，会触发数组扩容方法，会用到数组默认容量10</li>
+<li>无参构造器时，数组容量满时再次增加元素，也会触发数组扩容方法，会进行1.5倍扩容，扩容使用到的是Arrays.copyOf()方法，本质就是创建一个新数组，将老数组的元素赋值到新数组中的位置上去</li>
+<li>元素插入，需要检查角标，然后判断数组是否需要扩容，都符合就进行System.arraycopy()进行数组的移位</li>
+<li>元素删除，需要检查角标，也需要进行System.arraycopy()数组的移位，插入删除时间为o(n)</li>
+</ul>
+<a id="more"></a> 
+<h1 id="ArrayList的CRUD"><a href="#ArrayList的CRUD" class="headerlink" title="ArrayList的CRUD"></a>ArrayList的CRUD</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ArrayList arrayList = <span class="keyword">new</span> ArrayList();</span><br><span class="line">arrayList.add(<span class="string">"哈哈"</span>);</span><br><span class="line">arrayList.add(<span class="number">1</span>,<span class="string">"嘻嘻"</span>);</span><br><span class="line">arrayList.add(<span class="string">"呵呵"</span>);</span><br><span class="line">arrayList.remove(<span class="string">"哈哈"</span>);</span><br><span class="line">arrayList.remove(<span class="number">0</span>);</span><br><span class="line">arrayList.set(<span class="number">0</span>,<span class="string">"嘻哈"</span>);</span><br><span class="line">Object value = arrayList.get(<span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>想必这些简单的增删改查方法大家熟的不能再熟了吧，那么现在就跟随着我赶紧去看看源码吧~</p>
+<h1 id="ArrayList的源码世界"><a href="#ArrayList的源码世界" class="headerlink" title="ArrayList的源码世界"></a>ArrayList的源码世界</h1><h2 id="核心数据结构"><a href="#核心数据结构" class="headerlink" title="核心数据结构"></a>核心数据结构</h2><p>ArrayList底层是数组，那么肯定会有两个最基本的元素：一个数组结构用于存放元素，一个size结构用于记录数组中当前元素的个数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayList</span> </span>&#123;</span><br><span class="line">    <span class="keyword">transient</span> Object[] elementData;<span class="comment">// 数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> size;<span class="comment">// 数组元素个数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = &#123;&#125;;<span class="comment">// 默认空数组</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_CAPACITY = <span class="number">10</span>;<span class="comment">// 默认是10个元素</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (initialCapacity &gt; <span class="number">0</span>) &#123;</span><br><span class="line">       <span class="keyword">this</span>.elementData = <span class="keyword">new</span> Object[initialCapacity];</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> (initialCapacity == <span class="number">0</span>) &#123;</span><br><span class="line">       <span class="keyword">this</span>.elementData = EMPTY_ELEMENTDATA;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal Capacity: "</span>+initialCapacity);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们日常中最常用的两种构造方法，想必就是这两种了吧</p>
+<ol>
+<li>直接使用空参构造器，new ArrayList()这样</li>
+<li>开发习惯好一点的，可能会初始化一下数组的容量，new ArrayList(int initialCapacity)这样</li>
+</ol>
+<p>通过看构造方法的源码可知：</p>
+<ul>
+<li>对于无参构造方法来说，初始化就干了一件事，那就是 Object[] elementData = {}，将核心数组给设置成了空数组。并且很关键的一点是，此时没有给这个elementData分配默认容量</li>
+<li>对于有参构造方法来说，参数中传递了initialCapacity数组容量大小，如果initialCapacity &gt; 0，那么初始化方法为Object[] elementData = new Object[initialCapacity]; 构造了一个容量为initialCapacity的数组；如果initialCapacity == 0，就是将数组给设置为空数组了，Object[] elementData = {}；如果initialCapacity &lt; 0，直接抛出异常</li>
+</ul>
+<p>现在我们用无参构造方法创建出来一个ArrayList对象，来看看它的CRUD都是怎么玩的吧~</p>
+<h2 id="增加操作的源码"><a href="#增加操作的源码" class="headerlink" title="增加操作的源码"></a>增加操作的源码</h2><p>对于ArrayList来说，增加元素的方法API就是调用的 add(E e) 方法，用一个步骤来说明就是：</p>
+<ol>
+<li>增加元素之前，首先判断是否需要扩容，此时数组中的容量应该为size+1，需判断当前容量是否能容纳得下</li>
+<li>将元素赋值给 size 指向的数组位置，此时相当于数组中这个角标中已经有这个新元素了</li>
+<li>size++，表示数组中的容量大小加1，毕竟增加了一个新元素啦</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">add</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    ensureCapacityInternal(size + <span class="number">1</span>);  <span class="comment">// Increments modCount!!</span></span><br><span class="line">    elementData[size++] = e;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第2，3步骤都没有什么可说的，着重就是看第一步骤，判断数组是否需要扩容可能会发现奇迹哦！</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureCapacityInternal</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里为了方便看源码，我们将这些方法中的代码给展开到</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">ensureCapacityInternal</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) &#123;</span><br><span class="line">        minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);</span><br><span class="line">    &#125;</span><br><span class="line">    modCount++;</span><br><span class="line">    <span class="keyword">if</span> (minCapacity - elementData.length &gt; <span class="number">0</span>)</span><br><span class="line">        grow(minCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个 ensureCapacityInternal() 方法就是判断数组是否需要扩容，从这块代码可以看到，需要分两种情况来分析：</p>
+<ol>
+<li>第一种情况：第一次给ArrayList增加元素的时候，此时elementData = {}，minCapacity的值为DEFAULT_CAPACITY=10，此时 minCapacity - elementData.length = 10 - 0 = 10 &gt; 0，可知第一次增加元素的时候，就会走 grow(10) 扩容的方法，新大陆了，原来无参构造器中，第一次增加元素的过程，会触发数组扩容的操作，至于怎么扩容的，下面分析</li>
+<li>第二种情况：假设此时数组中已经有一个元素的情况下，再次增加元素，这里判断是否需要扩容的代码逻辑就成为，minCapacity = size + 1 = 2，得判断如果这个元素进入数组了，数组容量能否撑得住？发现 2 - 10 是小于0的，所以此时不会进入grow()扩容方法……当数组中已经有10个元素了，新增加第11个元素时，此时的minCapacity = size + 1 = 11，发现比数组容量10大了，进入 grow() 扩容方法，至于怎么扩容的，下面分析</li>
+</ol>
+<p>看到现在就能明白了，数组中采用无参构造器创建ArrayList对象，会有两种情况会触发数组扩容</p>
+<ol>
+<li>第一种情况是第一次创建元素会进行数组扩容；</li>
+<li>第二种情况是当数组容量满了的时候，还在往数组中新增元素时，也会触发数组的扩容。接着，就开始进入数组扩容的分析吧~~</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">grow</span><span class="params">(<span class="keyword">int</span> minCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> oldCapacity = elementData.length;</span><br><span class="line">    <span class="keyword">int</span> newCapacity = oldCapacity + (oldCapacity &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (newCapacity - minCapacity &lt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = minCapacity;<span class="comment">// 【标记A】</span></span><br><span class="line">    <span class="keyword">if</span> (newCapacity - MAX_ARRAY_SIZE &gt; <span class="number">0</span>)</span><br><span class="line">        newCapacity = hugeCapacity(minCapacity);</span><br><span class="line">    elementData = Arrays.copyOf(elementData, newCapacity);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>还是按照两种情况进行分析，新大陆就出现了哦</p>
+<ol>
+<li>第一种情况，无参构造器，第一次增加元素的时候：此时minCapacity = 10，oldCapacity = 0，newCapacity = newCapacity * 1.5 = 0，正是由于0 - 10 = -10 &lt; 0，就进入代码【标记A】中，将 newCapacity 设置为 10，这一个就可以看做是用默认长度10进行数组容量的初始化了。 elementData = Arrays.copyOf(elementData, 10); 进行数组的拷贝了</li>
+<li>第二种情况，数组此时有10个元素了，再次新增加元素时：此时minCapacity = 11，oldCapacity = 10，newCapacity = newCapacity * 1.5 = 15，扩容后数组新容量为15，就不会进入那两个if 条件判断了，直接是采用方法 elementData = Arrays.copyOf(elementData, 15); 进行数组的拷贝了</li>
+</ol>
+<p>分析这行代码   elementData = Arrays.copyOf(elementData, newCapacity); 数组拷贝，本质就是创建一个新的容量为newCapacity的数组，将老数组elementData中的元素拷贝到新数组中去，证明如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T,U&gt; T[] copyOf(U[] original, <span class="keyword">int</span> newLength, Class&lt;? extends T[]&gt; newType)&#123;</span><br><span class="line">    <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">    T[] copy = ((Object)newType == (Object)Object[].class)</span><br><span class="line">        ? (T[]) <span class="keyword">new</span> Object[newLength]</span><br><span class="line">        : (T[]) Array.newInstance(newType.getComponentType(), newLength);</span><br><span class="line">    System.arraycopy(original, <span class="number">0</span>, copy, <span class="number">0</span>, Math.min(original.length, newLength));</span><br><span class="line">    <span class="keyword">return</span> copy;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// Arrays.copy()的方法，创建了一个新数组，底层还是调用了 System.arraycopy()，进行数组元素移位，拷贝</span></span><br></pre></td></tr></table></figure>
+<p>好了，分析到这里，主要就将增加元素的源码给弄明白啦，接下来继续看插入操作的源码吧~</p>
+<h2 id="插入操作的源码"><a href="#插入操作的源码" class="headerlink" title="插入操作的源码"></a>插入操作的源码</h2><p>对于ArrayList来说，插入元素的方法API就是调用的 add(int index, E element) 方法，用一个步骤来说明就是：</p>
+<ol>
+<li>首先判断插入位置的角标是否合法</li>
+<li>插入操作，也得首先进行数组是否需要扩容的判断，若需要，就先扩容</li>
+<li>然后用System.arraycopy()进行数组元素的移位，相当于从插入元素的位置起，后面的元素，从最后一个元素依次向后移动一位，给要插入的元素挪动一个位置出来</li>
+<li>将挪动出来的位置给插入元素</li>
+<li>数组元素大小size++</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> index, E element)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 插入的角标不符合，直接抛出异常</span></span><br><span class="line">    <span class="keyword">if</span> (index &gt; size || index &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IndexOutOfBoundsException(outOfBoundsMsg(index));</span><br><span class="line">    <span class="comment">// 判断数组是否需要扩容</span></span><br><span class="line">    ensureCapacityInternal(size + <span class="number">1</span>);</span><br><span class="line">    <span class="comment">// 数组元素的移位，不会新创建数组，就是在老数组中进行的</span></span><br><span class="line">    System.arraycopy(elementData, index, elementData, index + <span class="number">1</span>, size - index);</span><br><span class="line">    elementData[index] = element;</span><br><span class="line">    size++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>插入操作的源码，主要就是这个数组元素移位的操作很关键。这里是用的java api 直接操作的，如果是让我们手写一个数组元素的移位，也是很简单的，就是从最后一个元素开始循环，直到插入元素的角标位置，循环里面的元素依次往后移动移位就行了。正是由于这里出现了数组的移位操作，就导致增加的时间复杂度为o(n)</p>
+<h2 id="修改操作的源码"><a href="#修改操作的源码" class="headerlink" title="修改操作的源码"></a>修改操作的源码</h2><p>对于ArrayList来说，修改元素的方法API就是调用的 set(int index, E element) 方法，用一个步骤来说明就是：</p>
+<ol>
+<li>校验修改的元素角标是否合法</li>
+<li>获取当前角标中的老元素</li>
+<li>将新元素赋值到这个插入位置上</li>
+<li>返回老元素</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">set</span><span class="params">(<span class="keyword">int</span> index, E element)</span> </span>&#123;</span><br><span class="line">    rangeCheck(index);</span><br><span class="line">    E oldValue = elementData(index);</span><br><span class="line">    elementData[index] = element;</span><br><span class="line">    <span class="keyword">return</span> oldValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>修改操作的源码也是很简单的，就是根据角标拿到当前角标中的元素，然后将新元素给设置到了这个角标中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">E <span class="title">elementData</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (E) elementData[index]; <span class="comment">// elementData()方法就是根据角标取元素，时间o(1)的操作</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="查询操作的源码"><a href="#查询操作的源码" class="headerlink" title="查询操作的源码"></a>查询操作的源码</h2><p>对于ArrayList来说，查询元素的方法API就是调用的 get(int index) 方法，用一个步骤来说明就是：</p>
+<ol>
+<li>校验查询的角标是否合法，index &lt; 0 或者 index &gt;= size 就是非法的</li>
+<li>然后通过角标获取数组中的元素，时间为o(1)的方法</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">get</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    rangeCheck(index);</span><br><span class="line">    <span class="keyword">return</span> elementData(index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="删除操作的源码"><a href="#删除操作的源码" class="headerlink" title="删除操作的源码"></a>删除操作的源码</h2><p>对于ArrayList来说，删除元素的方法API就是调用的 remove(Object o) 或者 remove(int index) 方法，可以指定角标删除，也可以指定要删除的某一个具体的元素，这里就分析根据角标删除的源码吧，用一个步骤来说明就是：</p>
+<ol>
+<li>校验删除角标是否合法</li>
+<li>将当前删除位置的角标对应的元素取出来</li>
+<li>采用System.arraycopy()进行数组元素移位，核心就是从删除元素的后一个位置开始，直到数组的最后一个元素，对于循环中的元素依次往前挪动一位，表示将要删除的位置给覆盖掉，完成删除操作</li>
+<li>由于此时元素少了一位，就将size肯定要-1，同时将最后一个元素设置为null</li>
+<li>最后返回这个角标下的老元素</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">remove</span><span class="params">(<span class="keyword">int</span> index)</span> </span>&#123;</span><br><span class="line">    rangeCheck(index);</span><br><span class="line">    modCount++;</span><br><span class="line">    E oldValue = elementData(index);</span><br><span class="line">    <span class="keyword">int</span> numMoved = size - index - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (numMoved &gt; <span class="number">0</span>)</span><br><span class="line">        System.arraycopy(elementData, index+<span class="number">1</span>, elementData, index, numMoved);</span><br><span class="line">    elementData[--size] = <span class="keyword">null</span>; </span><br><span class="line">    <span class="keyword">return</span> oldValue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>删除操作也涉及到移位了，用的api直接操作的，如果让咱们手写这块算法，我相信也是难不倒大家的，核心就是依次往前挪动一位，把要删除的位置元素给覆盖掉，相当于挤掉了。用数字分析这个过程就是：数组中有元素 1，2，3，4，5。此时要删除index=2的元素</p>
+<ol>
+<li>从index+1=3的位置开始，将后面的元素依次往前移动，此时就成为了 1，2，4，5，5</li>
+<li>此时由于少了一个元素size就会-1，变为4，然后将index=4的元素设置为null，1，2，4，5，null。</li>
+</ol>
+<h1 id="小节"><a href="#小节" class="headerlink" title="小节"></a>小节</h1><p>到目前位置，已经将ArrayList的核心数据结构，常见操作的源码都分析了一遍，大家是不是对这块知识的理解更深入了呢~~~</p>
+<p>主要就是记住数组的优点就是查询快，增删慢，然后会有扩容的操作。我们建议最好是在ArrayList构造的时候，给一个比较靠谱的初始化的数组的大小，避免数组容量太小，往里面塞入数据的时候，导致不断的在内存开辟新的数组进行数组扩容操作。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java集合源码/" rel="tag"># java集合源码</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/10/redis的底层数据类型之SDS/" rel="next" title="redis底层结构之-SDS">
+                <i class="fa fa-chevron-left"></i> redis底层结构之-SDS
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">sbing</p>
+              <p class="site-description motion-element" itemprop="description">你只管努力、剩下的交给天意</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives">
+                
+                    <span class="site-state-item-count">32</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">7</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ArrayList的CRUD"><span class="nav-number">1.</span> <span class="nav-text">ArrayList的CRUD</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ArrayList的源码世界"><span class="nav-number">2.</span> <span class="nav-text">ArrayList的源码世界</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#核心数据结构"><span class="nav-number">2.1.</span> <span class="nav-text">核心数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#构造方法"><span class="nav-number">2.2.</span> <span class="nav-text">构造方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#增加操作的源码"><span class="nav-number">2.3.</span> <span class="nav-text">增加操作的源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#插入操作的源码"><span class="nav-number">2.4.</span> <span class="nav-text">插入操作的源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改操作的源码"><span class="nav-number">2.5.</span> <span class="nav-text">修改操作的源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#查询操作的源码"><span class="nav-number">2.6.</span> <span class="nav-text">查询操作的源码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#删除操作的源码"><span class="nav-number">2.7.</span> <span class="nav-text">删除操作的源码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#小节"><span class="nav-number">3.</span> <span class="nav-text">小节</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">sbing</span>
+
+  
+
+  
+</div>
+
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.0.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.0"></script>
+
+  <script src="/js/src/motion.js?v=7.0.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=7.0.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=7.0.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.0"></script>
+<script src="/js/src/post-details.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=7.0.0"></script>
+
+
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
